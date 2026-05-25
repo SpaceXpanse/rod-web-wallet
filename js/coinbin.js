@@ -10,11 +10,26 @@ $(document).ready(function() {
 
 	$("#openBtn").click(function(){
 		var email = $("#openEmail").val().toLowerCase();
+		var walletPassword = $("#openPass").val();
+		var minimumWalletPasswordLength = 16;
+		var hasLowercaseCharacter = /[a-z]/.test(walletPassword);
+		var hasUppercaseCharacter = /[A-Z]/.test(walletPassword);
+		var hasNumericCharacter = /[0-9]/.test(walletPassword);
+		var hasSpecialCharacter = /[^A-Za-z0-9]/.test(walletPassword);
+		var hasNoWhitespace = !/\s/.test(walletPassword);
+		var isWalletPasswordStrong = (
+			walletPassword.length >= minimumWalletPasswordLength &&
+			hasLowercaseCharacter &&
+			hasUppercaseCharacter &&
+			hasNumericCharacter &&
+			hasSpecialCharacter &&
+			hasNoWhitespace
+		);
 		if(email.match(/[\s\w\d]+@[\s\w\d]+/g)){
-			if($("#openPass").val().length>=10){
+			if(isWalletPasswordStrong){
 				if($("#openPass").val()==$("#openPassConfirm").val()){
 					var email = $("#openEmail").val().toLowerCase();
-					var pass = $("#openPass").val();
+					var pass = walletPassword;
 					var s = email;
 					s += '|'+pass+'|';
 					s += s.length+'|!@'+((pass.length*7)+email.length)*7;
@@ -40,14 +55,18 @@ $(document).ready(function() {
 						if($("#walletSegwitBech32").is(":checked")){
 							var sw = coinjs.bech32Address(pubkey);
 							address = sw.address;
+							$("#walletToBtn").html('SegWit/Bech32 <span class="caret"></span>');
 						} else {
 
 							var sw = coinjs.segwitAddress(pubkey);
 							address = sw.address;
+							$("#walletToBtn").html('SegWit <span class="caret"></span>');
 						}
 
 						$("#walletKeys .walletSegWitRS").removeClass("hidden");
 						$("#walletKeys .walletSegWitRS input:text").val(sw.redeemscript);
+					} else {
+						$("#walletToBtn").html('Legacy <span class="caret"></span>');
 					}
 
 					$("#walletAddress").html(address);
@@ -69,7 +88,7 @@ $(document).ready(function() {
 					$("#openLoginStatus").html("Your passwords do not match!").removeClass("hidden").fadeOut().fadeIn();
 				}
 			} else {
-				$("#openLoginStatus").html("Your password must be at least 10 chars long").removeClass("hidden").fadeOut().fadeIn();
+				$("#openLoginStatus").html("Password must be at least 16 characters and include uppercase, lowercase, number, symbol, and no spaces.").removeClass("hidden").fadeOut().fadeIn();
 			}
 		} else {
 			$("#openLoginStatus").html("Your email address doesn't appear to be valid").removeClass("hidden").fadeOut().fadeIn();
@@ -99,13 +118,22 @@ $(document).ready(function() {
 		$("#openLoginStatus").html("").hide();
 	});
 
-	$("#walletSegwit").click(function(){
-		if($(this).is(":checked")){
-			$(".walletSegwitType").attr('disabled',false);
+	function syncWalletSegwitState(){
+		if($("#walletSegwit").is(":checked")){
+			$(".walletSegwitType").prop('disabled', false);
 		} else {
-			$(".walletSegwitType").attr('disabled',true);
-		}	
+			$(".walletSegwitType").prop('disabled', true);
+		}
+	}
+
+	$("#walletSegwit").on("change", function(){
+		syncWalletSegwitState();
 	});
+
+	var walletSegwitCheckbox = $("#walletSegwit")[0];
+	walletSegwitCheckbox.defaultChecked = false;
+	walletSegwitCheckbox.checked = false;
+	syncWalletSegwitState();
 
 	$("#walletToSegWit").click(function(){
 		$("#walletToBtn").html('SegWit <span class="caret"></span>');
@@ -331,15 +359,47 @@ $(document).ready(function() {
 		$("#newPrivKey").val(coin.wif);
 
 		/* encrypted key code */
-		if((!$("#encryptKey").is(":checked")) || $("#aes256pass").val()==$("#aes256pass_confirm").val()){
-			$("#aes256passStatus").addClass("hidden");
-			if($("#encryptKey").is(":checked")){
-				$("#aes256wifkey").removeClass("hidden");
+		if($("#encryptKey").is(":checked")){
+			var encryptionPassword = $("#aes256pass").val();
+			var encryptionPasswordConfirm = $("#aes256pass_confirm").val();
+
+			var minimumEncryptionPasswordLength = 16;
+			var hasLowercase = /[a-z]/.test(encryptionPassword);
+			var hasUppercase = /[A-Z]/.test(encryptionPassword);
+			var hasNumber = /[0-9]/.test(encryptionPassword);
+			var hasSymbol = /[^A-Za-z0-9]/.test(encryptionPassword);
+			var isStrongEncryptionPassword = (
+				encryptionPassword.length >= minimumEncryptionPasswordLength &&
+				hasLowercase &&
+				hasUppercase &&
+				hasNumber &&
+				hasSymbol
+			);
+
+			if(encryptionPassword !== encryptionPasswordConfirm){
+				$("#aes256passStatus").removeClass("hidden");
+				$("#aes256passStatus .alert").html('<span class="glyphicon glyphicon-exclamation-sign"></span> Password mismatch. This encryption password protects only the exported private key text and is not recoverable.');
+				$("#aes256wifkey").addClass("hidden");
+				$("#newPrivKeyEnc").val('');
+				return;
 			}
+
+			if(!isStrongEncryptionPassword){
+				$("#aes256passStatus").removeClass("hidden");
+				$("#aes256passStatus .alert").html('<span class="glyphicon glyphicon-exclamation-sign"></span> Weak encryption password. Use at least 16 characters with upper/lowercase, number, and symbol. Easy passwords are vulnerable to brute-force attacks.');
+				$("#aes256wifkey").addClass("hidden");
+				$("#newPrivKeyEnc").val('');
+				return;
+			}
+
+			$("#aes256passStatus").addClass("hidden");
+			$("#aes256wifkey").removeClass("hidden");
+			$("#newPrivKeyEnc").val(CryptoJS.AES.encrypt(coin.wif, encryptionPassword)+'');
 		} else {
-			$("#aes256passStatus").removeClass("hidden");
+			$("#aes256passStatus").addClass("hidden");
+			$("#aes256wifkey").addClass("hidden");
+			$("#newPrivKeyEnc").val('');
 		}
-		$("#newPrivKeyEnc").val(CryptoJS.AES.encrypt(coin.wif, $("#aes256pass").val())+'');
 	});
 	
 	$("#newPaperwalletBtn").click(function(){
@@ -376,9 +436,10 @@ $(document).ready(function() {
 
 	$("#encryptKey").click(function(){
 		if($(this).is(":checked")){
+			$("#encryptKeyWarning").removeClass("hidden");
 			$("#aes256passform").removeClass("hidden");
 		} else {
-			$("#aes256wifkey, #aes256passform, #aes256passStatus").addClass("hidden");
+			$("#aes256wifkey, #aes256passform, #aes256passStatus, #encryptKeyWarning").addClass("hidden");
 		}
 	});
 
@@ -1621,6 +1682,70 @@ $(document).ready(function() {
 
 	/* settings page code */
 
+	// Network definitions
+	var networks = [
+		{
+			name: 'SpaceXpanse ROD Mainnet',
+			value: 'rod-mainnet',
+			rel: '0x3c;0x4e;0x4b;0x488e4ad;0x4881eb2;true;true;rod'
+		},
+		{
+			name: 'SpaceXpanse ROD Testnet',
+			value: 'rod-testnet',
+			rel: '0x73;0xc6;0x89;0x43587cf;0x4358394;true;true;trod'
+		}
+	];
+
+	// Function to populate the network dropdown
+	function populateNetworkDropdown() {
+		var $dropdown = $('#coinjs_coin');
+		$dropdown.empty(); // Clear existing options
+
+		// Determine current network based on coinjs.pub
+		var currentPub = coinjs.pub;
+		var currentMultisig = coinjs.multisig;
+		var selectedFound = false;
+
+		for(var i = 0; i < networks.length; i++) {
+			var network = networks[i];
+			var networkValues = network.rel.split(';');
+			var networkPub = parseInt(networkValues[0]);
+			var networkMultisig = parseInt(networkValues[2]);
+
+			// Create option element
+			var $option = $('<option>', {
+				value: network.value,
+				text: network.name,
+				rel: network.rel
+			});
+
+			// Select if matches current network
+			if(currentPub === networkPub && currentMultisig === networkMultisig) {
+				$option.prop('selected', true);
+				selectedFound = true;
+			}
+
+			$dropdown.append($option);
+		}
+
+		// Add custom option last
+		var $customOption = $('<option>', {
+			value: 'custom',
+			text: 'Custom',
+			rel: '0x3c;0x4e;0x4b;0x488e4ad;0x4881eb2;false;false;rod'
+		});
+
+		// If no match found, select custom
+		if(!selectedFound) {
+			$customOption.prop('selected', true);
+		}
+
+		$dropdown.append($customOption);
+	}
+
+	// Populate the dropdown on page load
+	populateNetworkDropdown();
+
 	$("#coinjs_pub").val('0x'+(coinjs.pub).toString(16));
 	$("#coinjs_priv").val('0x'+(coinjs.priv).toString(16));
 	$("#coinjs_multisig").val('0x'+(coinjs.multisig).toString(16));
@@ -1673,30 +1798,17 @@ $(document).ready(function() {
 
 		var o = ($("option:selected",this).attr("rel")).split(";");
 
-		// deal with broadcasting settings
-			if(o[5]=="false"){
-				$("#coinjs_broadcast, #rawTransaction, #rawSubmitBtn, #openBtn").attr('disabled',true);
-				$("#coinjs_broadcast").val("rod-web-wallet");			
-		} else {
-			$("#coinjs_broadcast").val(o[5]);
-			$("#coinjs_broadcast, #rawTransaction, #rawSubmitBtn, #openBtn").attr('disabled',false);
-		}
+		// apply selected network values to the settings inputs
+		$("#coinjs_pub").val(o[0]);
+		$("#coinjs_priv").val(o[1]);
+		$("#coinjs_multisig").val(o[2]);
+		$("#coinjs_hdpub").val(o[3]);
+		$("#coinjs_hdprv").val(o[4]);
 
-		// deal with unspent output settings
-		if(o[6]=="false"){
-			$("#coinjs_utxo, #redeemFrom, #redeemFromBtn, #openBtn, .qrcodeScanner").attr('disabled',true);			
-			$("#coinjs_utxo").val("rod-web-wallet");
-		} else {
-			$("#coinjs_utxo").val(o[6]);
-			$("#coinjs_utxo, #redeemFrom, #redeemFromBtn, #openBtn, .qrcodeScanner").attr('disabled',false);
+		// apply selected bech32 hrp immediately
+		if(o[7]){
+			coinjs.bech32.hrp = o[7];
 		}
-
-		// deal with the reset
-		$("#coinjs_pub").val('0x3c');
-		$("#coinjs_priv").val('0x4e');
-		$("#coinjs_multisig").val('0x4b');
-		$("#coinjs_hdpub").val('0x488e4ad');
-		$("#coinjs_hdprv").val('0x4881eb2');
 
 		// hide/show custom screen
 		if($("option:selected",this).val()=="custom"){
@@ -1705,6 +1817,9 @@ $(document).ready(function() {
 			$("#settingsCustom").addClass("hidden");
 		}
 	});
+
+	// reflect initial selected network in the settings fields
+	$("#coinjs_coin").change();
 
 	function configureBroadcast(){
 		$("#rawSubmitBtn").click(function(){
@@ -1965,4 +2080,3 @@ $(document).ready(function() {
 	};
 
 });
-
