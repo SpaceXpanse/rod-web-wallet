@@ -51,7 +51,10 @@
 							<span class="icon-bar"></span>
 							<span class="icon-bar"></span>
 						</button>
-						<a href="#home" class="navbar-brand" id="homeBtn"><img src="images/coinbin.png" style="height:49px;margin-top:-15px"></a>
+						<a href="#home" class="navbar-brand rod-brand" id="homeBtn">
+							<img src="https://www.spacexpanse.org/img/about.png" alt="SpaceXpanse ROD coin logo">
+							<span>SpaceXpanse <b>ROD</b></span>
+						</a>
 					</div>
 					<div class="collapse navbar-collapse">
 						<ul class="nav navbar-nav">
@@ -94,49 +97,70 @@
 					<div class="tab-pane tab-content active" id="home">
 						<div class="row">
 							<div class="col-md-12">
-								<h2>rod-web-wallet <small>Welcome to the Blockchain</small></h2>
+								<h2>SpaceXpanse ROD Wallet <small>Welcome to the Blockchain</small></h2>
 							</div>
 						</div>
 
-						<div class="jumbotron">
-              <h1>SpaceXpanse ROD. It's your content!</h1>
-              <p>A fork of <a href="https://rod-web-wallet">rod-web-wallet</a> for the SpaceXpanse ROD blockchain.</p>
-							<p><a class="btn btn-primary btn-lg" href="#about" role="button">Learn more &raquo;</a></p>
+						<div class="jumbotron rod-hero">
+							<div class="rod-hero-copy">
+								<p class="rod-eyebrow">Browser-based mission control for SpaceXpanse</p>
+								<h1>Secure your ROD journey.</h1>
+								<p>Create addresses, open your wallet, build transactions, and sign locally while your private keys stay in your browser.</p>
+								<p>
+									<a class="btn btn-primary btn-lg" href="#wallet" data-toggle="tab" role="button">Open Wallet</a>
+									<a class="btn btn-default btn-lg" href="#newAddress" data-toggle="tab" role="button">Create Address</a>
+								</p>
+							</div>
+							<div class="rod-hero-orb" aria-hidden="true">
+								<img src="https://www.spacexpanse.org/img/about.png" alt="">
+							</div>
 						</div>
 
 						<hr>
 
-						<div class="row">
+						<div class="row rod-feature-grid">
 							<div class="col-md-4">
-								<h3><span class="glyphicon glyphicon-ok"></span> Open Source</h3>
-							<p>rod-web-wallet is an open source web-based wallet written in JavaScript and released under the <a href="LICENSE">MIT license</a>, which means it's free to use and edit.</p>
+								<div class="rod-feature-card">
+									<h3><span class="glyphicon glyphicon-lock"></span> Keys Stay Local</h3>
+									<p>Generate addresses and sign ROD transactions in-browser without sending private keys to a remote server.</p>
+								</div>
 							</div>
 
 							<div class="col-md-4">
-								<h3><span class="glyphicon glyphicon-fullscreen"></span> MultiSig</h3>
-								<p>We offer a fully transparent <a href="#newMultiSig">multisig</a> solution which works seamlessly offline and with other SpaceXpanse ROD clients.</p>
+								<div class="rod-feature-card">
+									<h3><span class="glyphicon glyphicon-screenshot"></span> ROD Native</h3>
+									<p>Use SpaceXpanse network constants, ROD explorer links, ROD URI handling, SegWit, and Bech32 support.</p>
+								</div>
 							</div>
 
 							<div class="col-md-4">
-								<h3><span class="glyphicon glyphicon-bitcoin"></span> Raw Transactions</h3>
-							<p><a href="#newTransaction">Create</a>, <a href="#verify">verify</a>, <a href="#sign">sign</a> and <a href="#broadcast">broadcast</a> custom raw transactions online with advanced features and minimal effort.</p>
+								<div class="rod-feature-card">
+									<h3><span class="glyphicon glyphicon-send"></span> Launch Transactions</h3>
+									<p><a href="#newTransaction">Create</a>, <a href="#verify">verify</a>, <a href="#sign">sign</a>, and <a href="#broadcast">broadcast</a> custom raw transactions with expert controls.</p>
+								</div>
 							</div>
 						</div>
 
-						<div class="row">
+						<div class="row rod-feature-grid">
 							<div class="col-md-4">
-								<h3><span class="glyphicon glyphicon-piggy-bank"></span> Wallet</h3>
-								<p>Quick access to an <a href="#wallet">online wallet</a> where only you have access to your own private keys &amp; can <a href="#fees">calculate your own fee</a>!</p>
+								<div class="rod-feature-card">
+									<h3><span class="glyphicon glyphicon-briefcase"></span> Wallet</h3>
+									<p>Open a deterministic browser wallet, check balance, prepare spends, and review fee guidance.</p>
+								</div>
 							</div>
 
 							<div class="col-md-4">
-								<h3><span class="glyphicon glyphicon-globe"></span> Addresses</h3>
-								<p>We support <a href="#newAddress">regular addresses</a>, <a href="#newMultiSig">multisig</a>, <a href="#newSegWit">segwit / bech32</a> and stealth all with access to your own private keys!</p>
+								<div class="rod-feature-card">
+									<h3><span class="glyphicon glyphicon-qrcode"></span> Offline Ready</h3>
+									<p>Create QR codes, scan addresses, build transactions, and sign from a downloaded local copy.</p>
+								</div>
 							</div>
 
 							<div class="col-md-4">
-								<h3><span class="glyphicon glyphicon-wrench"></span>  Development</h3>
-								<p>Use what we've built to write your own projects! See our documentation (coming soon), or contribute at <a href="https://github.com/SpaceXpanse/rod-web-wallet">GitHub</a>.</p>
+								<div class="rod-feature-card">
+									<h3><span class="glyphicon glyphicon-fullscreen"></span> Advanced Tools</h3>
+									<p>Create multisig, time-locked, SegWit, and HD addresses while preserving legacy expert workflows.</p>
+								</div>
 							</div>
 						</div>
 					</div>
