@@ -3,11 +3,11 @@ coinbin
 
 A Open Source Browser Based SpaceXpanse ROD Wallet. Version 1.7 beta by OutCast3k
 
-Live version available at http://coinb.in/ or coinbin3ravkwb24f7rmxx6w3snkjw45jhs5lxbh3yfeg3vpt6janwqd.onion
+Live version available at http://rod-web-wallet/ or coinbin3ravkwb24f7rmxx6w3snkjw45jhs5lxbh3yfeg3vpt6janwqd.onion
 
-Github URL: https://github.com/lbryio/coinbin/
+Github URL: https://github.com/SpaceXpanse RODio/coinbin/
 
-Coinb.in supports a number of key features such as: 
+rod-web-wallet supports a number of key features such as: 
 
 - Offline Compressed & uncompressed Address creation.
 - Offline Multisignature Address creation.
@@ -30,7 +30,12 @@ Coinb.in supports a number of key features such as:
 - Replace by fee (RBF) Support.
 - Segwit Support.
 - Bech32 address support.
-- Fee calculator - https://coinb.in/#fees
+- Fee calculator - https://rod-web-wallet/#fees
+  - Uses deterministic local fee guidance for ROD (no Coinb.in fee endpoint dependency).
 - Transaction rebuild support for RBF and double spending.
+- Broadcast flow is JSON-normalized against the ROD API POST /broadcast response format (`{result,error,id}`).
 
-Donate to 33tht1bKDgZVxb39MnZsWa8oxHXHvUYE4G to see more development!
+Donation is disabled by default (`0`) in this ROD build to avoid accidental sends to non-ROD addresses.
+ROD API endpoint defaults to `http://api.spacexpanse.org:1234`.
+HTTPS probe to `https://api.spacexpanse.org:1234` may fail depending on current server TLS availability.
+

@@ -10,16 +10,16 @@
 	var coinjs = window.coinjs = function () { };
 
 	/* public vars */
-	coinjs.pub = 0x55;
-	coinjs.priv = 0x1c;
-	coinjs.multisig = 0x7a;
-	coinjs.hdkey = {'prv':0x0488ade4, 'pub':0x0488b21e};
-	coinjs.bech32 = {'charset':'qpzry9x8gf2tvdw0s3jn54khce6mua7l', 'version':0, 'hrp':'lbc'};
+	coinjs.pub = 0x3c;
+	coinjs.priv = 0x4e;
+	coinjs.multisig = 0x4b;
+	coinjs.hdkey = {'prv':0x04881eb2, 'pub':0x0488e4ad};
+	coinjs.bech32 = {'charset':'qpzry9x8gf2tvdw0s3jn54khce6mua7l', 'version':0, 'hrp':'rod'};
 
 	coinjs.compressed = false;
 
 	/* other vars */
-	coinjs.developer = '33tht1bKDgZVxb39MnZsWa8oxHXHvUYE4G'; //bitcoin
+	coinjs.developer = '';
 
 	/* bit(coinb.in) api vars */
 //	coinjs.hostname	= ((document.location.hostname.split(".")[(document.location.hostname.split(".")).length-1]) == 'onion') ? 'coinbin3ravkwb24f7rmxx6w3snkjw45jhs5lxbh3yfeg3vpt6janwqd.onion' : 'coinb.in';
@@ -27,7 +27,7 @@
 	coinjs.host = ('https:'==document.location.protocol?'https://':'http://')+coinjs.hostname+'/api/';
 	coinjs.uid = '1';
 	coinjs.key = '12345678901234567890123456789012';
-	coinjs.chainqueryAPI = "https://chainquery.lbry.com/api/sql"
+	coinjs.rodApi = "http://api.spacexpanse.org:1234";
 
 
 	/* start of address functions */
@@ -355,8 +355,18 @@
 
 	/* retreive the balance from a given address */
 	coinjs.addressBalance = function(address, callback){
-		const query = 'select balance from address where address = "'+address+'";'
-		coinjs.ajax(coinjs.chainqueryAPI+'?query='+encodeURIComponent(query), (response)=>{callback(JSON.parse(response))}, "GET");
+		coinjs.ajax(coinjs.rodApi+'/balance/'+encodeURIComponent(address), function(response){
+			try {
+				var parsed = JSON.parse(response);
+				if (typeof parsed.balance !== 'undefined') {
+					callback({'success': true, 'data': [{'balance': parsed.balance}]});
+				} else {
+					callback({'success': false, 'error': 'Unexpected balance response', 'raw': parsed});
+				}
+			} catch (error) {
+				callback({'success': false, 'error': 'Invalid balance response'});
+			}
+		}, "GET");
 	}
 
 	/* decompress an compressed public key */
@@ -1109,14 +1119,51 @@
 
 		/* list unspent transactions */
 		r.listUnspent = function(address, callback) {
-			const query = 'select o.transaction_hash, o.vout, o.value, o.script_pub_key_hex, o.type from address a inner join transaction_address ta on a.id = ta.address_id inner join output o on o.transaction_id = ta.transaction_id and o.is_spent = 0 and o.type not in ("nonstandard","nulldata") and o.address_list = \'["'+address+'"]\' where a.address = "'+address+'";'
-			coinjs.ajax(coinjs.chainqueryAPI+'?query='+encodeURIComponent(query), (response)=>{callback(JSON.parse(response))}, "GET");
+			coinjs.ajax(coinjs.rodApi+'/unspent/'+encodeURIComponent(address), function(response){
+				try {
+					var parsed = JSON.parse(response);
+					var data = [];
+					if (coinjs.isArray(parsed)) {
+						for (var index = 0; index < parsed.length; index++) {
+							var output = parsed[index];
+							data.push({
+								'transaction_hash': output.txid || output.transaction_hash,
+								'vout': output.vout,
+								'value': output.value,
+								'script_pub_key_hex': output.scriptPubKey || output.script_pub_key_hex
+							});
+						}
+					}
+					callback({'success': true, 'data': data});
+				} catch (error) {
+					callback({'success': false, 'error': 'Invalid unspent response'});
+				}
+			}, "GET");
 		}
 
 		/* list transaction data */
 		r.getTransaction = function(txid, callback) {
-			const query = 'select transaction_hash, vout, value, script_pub_key_hex from output where is_spent = 0 and type not in ("nonstandard","nulldata") and transaction_hash = "'+txid+'"'
-			coinjs.ajax(coinjs.chainqueryAPI+'?query='+encodeURIComponent(query), (response)=>{callback(JSON.parse(response))}, "GET");
+			coinjs.ajax(coinjs.rodApi+'/transaction/'+encodeURIComponent(txid), function(response){
+				try {
+					var parsed = JSON.parse(response);
+					var outputs = parsed.vout || [];
+					var data = [];
+					for (var index = 0; index < outputs.length; index++) {
+						var output = outputs[index];
+						if (!output.spentTxId) {
+							data.push({
+								'transaction_hash': txid,
+								'vout': output.n,
+								'value': output.value,
+								'script_pub_key_hex': (output.scriptPubKey && output.scriptPubKey.hex) ? output.scriptPubKey.hex : ''
+							});
+						}
+					}
+					callback({'success': true, 'data': data});
+				} catch (error) {
+					callback({'success': false, 'error': 'Invalid transaction response'});
+				}
+			}, "GET");
 		}
 
 		/* add unspent to transaction */
@@ -1128,12 +1175,12 @@
 				var total = 0;
 				var x = {};
 
-				if(data){
-					for(i=0;i<=data["data"].length;i++){
+				if(data && data["data"]){
+					for(i=0;i<data["data"].length;i++){
 						var u = data["data"][i]
 						var txhash = u["transaction_hash"];
 						var n = u["vout"];
-						var scr = script || n["script_pub_key_hex"];
+						var scr = script || u["script_pub_key_hex"];
 
 						if(segwit){
 							/* this is a small hack to include the value with the redeemscript to make the signing procedure smoother. 
@@ -1173,7 +1220,22 @@
 		/* broadcast a transaction */
 		r.broadcast = function(callback, txhex){
 			var tx = txhex || this.serialize();
-			coinjs.ajax(coinjs.host+'?uid='+coinjs.uid+'&key='+coinjs.key+'&setmodule=bitcoin&request=sendrawtransaction', callback, "POST", ["rawtx="+tx]);
+			coinjs.ajax(coinjs.rodApi+'/broadcast', function(response){
+				try {
+					var parsed = JSON.parse(response);
+					var txid = parsed && parsed.result ? parsed.result : '';
+					var errorMessage = parsed && parsed.error ? parsed.error : '';
+					callback({
+						'success': !!txid && !errorMessage,
+						'txid': txid,
+						'error': errorMessage,
+						'response': errorMessage || txid || 'Unknown broadcast response',
+						'raw': parsed
+					});
+				} catch (error) {
+					callback({'success': false, 'txid': '', 'error': 'Invalid broadcast response', 'response': 'Invalid broadcast response'});
+				}
+			}, "POST", 'raw='+encodeURIComponent(tx));
 		}
 
 		/* generate the transaction hash to sign from a transaction input */

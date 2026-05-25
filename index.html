@@ -2,11 +2,11 @@
 <html lang="en">
 	<head>
 
-		<title>LBRY Wallet by Coinb.in</title>
+		<title>SpaceXpanse ROD Wallet by rod-web-wallet</title>
 
 		<meta http-equiv="content-type" content="text/html;charset=utf-8" />
-		<meta name="keywords" content="bitcoin, wallet, multisig, multisignature, address, browser, segwit, javascript, js, broadcast, transaction, verify, decode" />
-		<meta name="description" content="A Bitcoin Wallet written in Javascript. Supports Multisig, SegWit, Custom Transactions, nLockTime and more!" />
+		<meta name="keywords" content="spacexpanse, rod, wallet, multisig, multisignature, address, browser, segwit, javascript, js, broadcast, transaction, verify, decode" />
+		<meta name="description" content="A SpaceXpanse ROD Wallet written in Javascript. Supports Multisig, SegWit, custom transactions, nLockTime and more!" />
 
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -94,13 +94,13 @@
 					<div class="tab-pane tab-content active" id="home">
 						<div class="row">
 							<div class="col-md-12">
-								<h2>Coinb.in <small>Welcome to the Blockchain</small></h2>
+								<h2>rod-web-wallet <small>Welcome to the Blockchain</small></h2>
 							</div>
 						</div>
 
 						<div class="jumbotron">
-              <h1>LBRY. It's your content!</h1>
-              <p>A fork of <a href="https://coinb.in">coinb.in</a> for the LBRY blockchain.</p>
+              <h1>SpaceXpanse ROD. It's your content!</h1>
+              <p>A fork of <a href="https://rod-web-wallet">rod-web-wallet</a> for the SpaceXpanse ROD blockchain.</p>
 							<p><a class="btn btn-primary btn-lg" href="#about" role="button">Learn more &raquo;</a></p>
 						</div>
 
@@ -109,17 +109,17 @@
 						<div class="row">
 							<div class="col-md-4">
 								<h3><span class="glyphicon glyphicon-ok"></span> Open Source</h3>
-								<p>Coinbin is an open source web based wallet written in javascript and released under the <a href="LICENSE">MIT license</a> which means it's free to use and edit.</p>
+							<p>rod-web-wallet is an open source web-based wallet written in JavaScript and released under the <a href="LICENSE">MIT license</a>, which means it's free to use and edit.</p>
 							</div>
 
 							<div class="col-md-4">
 								<h3><span class="glyphicon glyphicon-fullscreen"></span> MultiSig</h3>
-								<p>We offer a fully transparent <a href="#newMultiSig">multisig</a> solution which works seamlessly offline and with other LBRY clients.</p>
+								<p>We offer a fully transparent <a href="#newMultiSig">multisig</a> solution which works seamlessly offline and with other SpaceXpanse ROD clients.</p>
 							</div>
 
 							<div class="col-md-4">
 								<h3><span class="glyphicon glyphicon-bitcoin"></span> Raw Transactions</h3>
-								<p><a href="#newTransaction">Create</a>, <a href="#verify">verify</a>, <a href="#sign">sign</a> and <a href="#broadcast">broadcast</a> custom raw transactions online with advanced features and minimal effort!</p>
+							<p><a href="#newTransaction">Create</a>, <a href="#verify">verify</a>, <a href="#sign">sign</a> and <a href="#broadcast">broadcast</a> custom raw transactions online with advanced features and minimal effort.</p>
 							</div>
 						</div>
 
@@ -136,7 +136,7 @@
 
 							<div class="col-md-4">
 								<h3><span class="glyphicon glyphicon-wrench"></span>  Development</h3>
-								<p>Use what we've built to write your own projects! See our documention (coming soon), or contribute at <a href="https://github.com/lbryio/coinbin/">github</a>.</p>
+								<p>Use what we've built to write your own projects! See our documentation (coming soon), or contribute at <a href="https://github.com/SpaceXpanse/rod-web-wallet">GitHub</a>.</p>
 							</div>
 						</div>
 					</div>
@@ -144,7 +144,7 @@
 					<div class="tab-pane tab-content" id="wallet">
 						<div class="row">
 							<div class="col-md-12">
-								<h2>Open Wallet <small> browser based bitcoin wallet</small></h2>
+							<h2>Open Wallet <small> browser-based SpaceXpanse ROD wallet</small></h2>
 								<div id="openLogin">
 									<form class="form-signin" role="form" action="javascript:;">
 
@@ -204,7 +204,7 @@
 											<br>
 											<div style="text-align:center; width:350px;">
 												<ul class="nav nav-pills" role="tablist">
-													<li role="presentation" class="active"><a href="javascript:;" id="walletBalance">0.00 LBC</a></li>
+													<li role="presentation" class="active"><a href="javascript:;" id="walletBalance">0.00 ROD</a></li>
 													<li role="presentation"><a href="javascript:;" id="walletShowSpend">Spend</a></li>
 													<li role="presentation"><a href="javascript:;" id="walletHistory" target="_blank">History</a></li>
 													<li role="presentation"><a href="javascript:;" id="walletShowBuy">Buy</a></li>
@@ -269,8 +269,8 @@
 															<input type="text" class="form-control" value="0.00001000" id="txFee">
 														</div>
 														<div class="col-xs-5">
-															<label><abbr title="the amount to donate to coinb.in">Donation</abbr></label>
-															<input type="text" class="form-control" value="0.001" id="developerDonation">
+									<label><abbr title="optional donation amount; default is disabled">Donation</abbr></label>
+									<input type="text" class="form-control" value="0" id="developerDonation">
 														</div>
 													</div>
 													<br>
@@ -391,7 +391,7 @@
 						<p>You can use the advanced options below to generate different kind of keys and addresses.</p>
 
 						<div class="checkbox">
-							<label><input type="checkbox" id="newSegWitBech32addr" class="checkbox-inline" checked> Enable <a href="https://en.bitcoin.it/wiki/Bech32" target="_blank">Bech32</a>?</label>
+								<label><input type="checkbox" id="newSegWitBech32addr" class="checkbox-inline" checked> Enable <a href="https://en.bitcoin.it/wiki/Bech32" target="_blank">Bech32 format</a>?</label>
 						</div>
 
 						<div class="checkbox">
@@ -419,8 +419,8 @@
 						<div class="row">
 
 							<div class="col-md-8">
-								<p>Public keys can be <a href="#newAddress">generated in your browser</a> or from your LBRY client</a>.</p>
-								<p>Enter the public keys of all the participants, to create a <a href="https://en.bitcoin.it/wiki/Address#Multi-signature_addresses" target="_blank">multi signature address</a>. Maximum of 15 allowed. Compressed and uncompressed public keys are accepted.</p>
+								<p>Public keys can be <a href="#newAddress">generated in your browser</a> or from your SpaceXpanse ROD client</a>.</p>
+								<p>Enter the public keys of all the participants, to create a <a href="https://en.bitcoin.it/wiki/Address#Multi-signature_addresses" target="_blank">multisignature address documentation</a>. Maximum of 15 allowed. Compressed and uncompressed public keys are accepted.</p>
 							</div>
 
 							<div class="col-md-3">
@@ -498,8 +498,8 @@
                         <div class="row">
 
                             <div class="col-md-11">
-				<p>Use <i><a href="https://github.com/bitcoin/bips/blob/master/bip-0065.mediawiki" target="_blank">OP_CHECKLOCKTIMEVERIFY</a></i> (OP_HODL) to create a time locked address where the funds are unspendable until a set date and time has passed.</p>
-                                <p>Public keys can be <a href="#newAddress">generated in your browser</a> or from your LBRY client</a>.</p>
+				<p>Use <i><a href="https://github.com/bitcoin/bips/blob/master/bip-0065.mediawiki" target="_blank">BIP-65 / OP_CHECKLOCKTIMEVERIFY documentation</a></i> (OP_HODL) to create a time locked address where the funds are unspendable until a set date and time has passed.</p>
+                                <p>Public keys can be <a href="#newAddress">generated in your browser</a> or from your SpaceXpanse ROD client</a>.</p>
                                 <p>Enter the public key that will be able to unlock the funds after the a certain date.
                             </div>
 
@@ -635,14 +635,14 @@
 
 								<label>Null Data</label> <span class="text-muted text-normal">(80 byte limit, <i>40 bytes recommended</i>)</span>
 								<p class="checkbox">
-									<label><input type="checkbox" id="opReturn" class="checkbox-inline"> Allow data to be sent within the transaction and stored in the blockchain by using <a href="https://bitcoin.org/en/developer-guide#null-data" target="_blank">OP_RETURN</a>.</label>
+									<label><input type="checkbox" id="opReturn" class="checkbox-inline"> Allow data to be sent within the transaction and stored in the blockchain by using <a href="https://bitcoin.org/en/developer-guide#null-data" target="_blank">OP_RETURN documentation</a>.</label>
 									<div class="text-muted">When using this option you may enter a hex string or address into the address field on the output tab.</div>
 								</p>
 
 								<hr>
 
 								<label>Lock Time</label>
-								<p>The <a href="https://bitcoin.org/en/developer-guide#locktime-and-sequence-number">locktime</a> indicates the earliest time a transaction can be added to the block chain.</p>
+								<p>The <a href="https://bitcoin.org/en/developer-guide#locktime-and-sequence-number">locktime documentation</a> indicates the earliest time a transaction can be added to the block chain.</p>
 								<input type="text" class="form-control" value="0" id="nLockTime">
 
 								<hr>
@@ -650,7 +650,7 @@
 
 								<label>Replace By Fee (RBF)</label>
 								<p class="checkbox">
-									<label><input type="checkbox" id="txRBF" class="checkbox-inline" checked> Make this a <a href="https://en.bitcoin.it/wiki/Transaction_replacement" target="_blank">RBF transaction</a>.</label>
+									<label><input type="checkbox" id="txRBF" class="checkbox-inline" checked> Make this a <a href="https://en.bitcoin.it/wiki/Transaction_replacement" target="_blank">RBF transaction documentation</a>.</label>
 								</p>
 
 								<hr>
@@ -777,11 +777,11 @@
 
 
 					<div class="tab-pane tab-content" id="fees">
-						<h2>LBC Fee Calculator</h2>
+						<h2>ROD Fee Calculator</h2>
 						<p>This page will give you a guide on the lowest fee to use to get your transaction included within the next few blocks. It works by predicting the size of a transaction and comparing it to another transaction in a recent block to determine an appropriate fee.</p>
 
 						<div align="center" class="alert alert-info">
-							<h2><span class="glyphicon glyphicon-question-sign"></span> Recommended Fee: <span class="recommendedFee">0.00000000</span> LBC <small> <br> for a transaction of <span class="feeTxSize">0</span> bytes</small></h2>
+							<h2><span class="glyphicon glyphicon-question-sign"></span> Recommended Fee: <span class="recommendedFee">0.00000000</span> ROD <small> <br> for a transaction of <span class="feeTxSize">0</span> bytes</small></h2>
 							<span class="text-muted"><i><span class="feeSatByte">?</span> Dewey/Byte</i></span>
 						</div>
 
@@ -917,7 +917,7 @@
 								<p><b>Transaction Fee</b>: <span class="txFee">0.00000000</span></p>
 								<p><b>Dewey per Byte</b>: <span class="feeSatByte">0</span></p>
 
-								<p>Based on your data and this recently mined transaction we recommend a fee of <b><span class="recommendedFee">0.00000000</span> LBC</b> to get it into the next few blocks</p>
+								<p>Based on your data and this recently mined transaction we recommend a fee of <b><span class="recommendedFee">0.00000000</span> ROD</b> to get it into the next few blocks</p>
 							</div>
 						</div>
 
@@ -1321,7 +1321,7 @@
 					</div>
 
 					<div class="tab-pane tab-content" id="broadcast">
-						<h2>Broadcast Transaction <small>into the LBRY network</small></h2>
+						<h2>Broadcast Transaction <small>into the SpaceXpanse ROD network</small></h2>
 						<div class="alert alert-warning"><strong>Doesn't work right now</strong>. Needs endpoint to broadcast to.</div>
 						<a href="#settings" style="float:right;"><span class="glyphicon glyphicon-cog"></span></a>
 						<p>Enter your hex encoded transaction</p>
@@ -1341,19 +1341,19 @@
 
 					<div class="tab-pane tab-content" id="about">
 						<h2>About</h2>
-						<p>Github <a href="https://github.com/lbryio/coinbin/">https://github.com/lbryio/coinbin/</a></p>
+						<p>GitHub <a href="https://github.com/SpaceXpanse/rod-web-wallet">https://github.com/SpaceXpanse/rod-web-wallet</a></p>
 					</div>
 
 					<div class="tab-pane tab-content" id="settings">
-						<h2>Settings <small> making coinb.in even better!</small></h2>
-						<p>These simple settings below make coinb.in one of the most decentralized wallets in the world.</p>
+						<h2>Settings <small> making rod-web-wallet even better!</small></h2>
+						<p>These simple settings below make rod-web-wallet one of the most decentralized wallets in the world.</p>
 
 						<div class="row">
 							<div class="col-md-12">
 								<b>Network</b>: <br>
 								<p class="text-muted">Select which network you'd like to use for key pair generation.</p>
 								<select class="form-control" id="coinjs_coin">
-									<option value="custom" rel="0x55;0x1c;0x7a;0x488b21e;0x488ade4;false;false">Custom</option>
+									<option value="custom" rel="0x3c;0x4e;0x4b;0x488e4ad;0x4881eb2;false;false">Custom</option>
 								</select>
 							</div>
 						</div>
@@ -1394,7 +1394,7 @@
 
 							<br>
 
-							<div class="alert alert-info"> <span class="glyphicon glyphicon-info-sign"></span> You will not be able to automatically broadcast or retreive your unspent outputs from coinb.in when using this setting and will need to use your desktop client instead, however everything else such as creating key pairs, addresses, transaction generation and signing will continue to function normally.</div>
+							<div class="alert alert-info"> <span class="glyphicon glyphicon-info-sign"></span> You will not be able to automatically broadcast or retreive your unspent outputs from rod-web-wallet when using this setting and will need to use your desktop client instead, however everything else such as creating key pairs, addresses, transaction generation and signing will continue to function normally.</div>
 						</div>
 
 						<hr>
@@ -1408,7 +1408,7 @@
 					</div>
 
 					<br>
-					<p class="text-muted">This page uses javascript to generate your addresses and sign your transactions within your browser, this means we <i>never</i> receive your private keys, this can be independently verified by reviewing the source code on <a href="https://github.com/lbryio/coinbin/" target="_blank">github</a>. You can even <a href="https://github.com/lbryio/coinbin/archive/master.zip">download</a> this page and host it yourself or run it offline!</p>
+					<p class="text-muted">This page uses JavaScript to generate your addresses and sign your transactions within your browser, which means we <i>never</i> receive your private keys. This can be independently verified by reviewing the source code on <a href="https://github.com/SpaceXpanse/rod-web-wallet" target="_blank">GitHub</a>. You can even <a href="https://github.com/SpaceXpanse/rod-web-wallet/archive/refs/heads/main.zip">download</a> this page and host it yourself or run it offline.</p>
 					<br>
 
 				</div>
@@ -1432,7 +1432,7 @@
 				</div>
 
 				<div class="modal-body">
-					<p>You are about to send a transaction to the value of <span id="spendAmount">0.00</span> LBC</p>
+					<p>You are about to send a transaction to the value of <span id="spendAmount">0.00</span> ROD</p>
 
 					<br>
 					<div id="walletSendConfirmStatus" class="alert alert-danger hidden"></div>
@@ -1523,7 +1523,7 @@
 							-->
 
 							<select id="mediatorList" class="form-control">
-								<option value="02b6231cc602740c29436eafbb6448880f4058cc3d2745c709deee313104678277;support@coinb.in;1">Coinb.in</option>
+								<option value="02b6231cc602740c29436eafbb6448880f4058cc3d2745c709deee313104678277;support@rod-web-wallet;1">rod-web-wallet</option>
 							</select>
 						</div>
 
@@ -1565,7 +1565,7 @@
 				</div>
 
 				<div class="modal-body">
-					Please be aware that you have created a transaction with what seems to be a very high fee of <span id="modalWarningFeeAmount"></span> LBC!
+					Please be aware that you have created a transaction with what seems to be a very high fee of <span id="modalWarningFeeAmount"></span> ROD!
 				</div>
 
 				<div class="modal-footer">
@@ -1579,3 +1579,4 @@
 	<div class="hidden" id="entropybucket"></div>
 	</body>
 </html>
+

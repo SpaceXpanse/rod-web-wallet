@@ -2,9 +2,9 @@ $(document).ready(function() {
 
 	/* open wallet code */
 
-	var explorer_tx = "https://explorer.lbry.com/tx/"
-	var explorer_addr = "https://explorer.lbry.com/address/"
-	var explorer_block = "https://explorer.lbry.com/blocks/"
+	var explorer_tx = "https://explorer.rod.spacexpanse.org/tx/"
+	var explorer_addr = "https://explorer.rod.spacexpanse.org/address/"
+	var explorer_block = "https://explorer.rod.spacexpanse.org/blocks/"
 
 	var wallet_timer = false;
 
@@ -55,7 +55,7 @@ $(document).ready(function() {
 
 					$("#walletQrCode").html("");
 					var qrcode = new QRCode("walletQrCode");
-					qrcode.makeCode("bitcoin:"+address);
+					qrcode.makeCode("rod:"+address);
 
 					$("#walletKeys .privkey").val(wif);
 					$("#walletKeys .pubkey").val(pubkey);
@@ -91,7 +91,7 @@ $(document).ready(function() {
 
 		$("#walletQrCode").html("");
 		var qrcode = new QRCode("walletQrCode");
-		qrcode.makeCode("bitcoin:");
+		qrcode.makeCode("rod:");
 
 		$("#walletKeys .privkey").val("");
 		$("#walletKeys .pubkey").val("");
@@ -148,7 +148,7 @@ $(document).ready(function() {
 		var devaddr = coinjs.developer;
 		var devamount = $("#developerDonation");
 
-		if((devamount.val()*1)>0){
+		if((devamount.val()*1)>0 && devaddr){
 			tx.addoutput(devaddr, devamount.val()*1);
 		}
 
@@ -201,10 +201,11 @@ $(document).ready(function() {
 				// and finally broadcast!
 
 				tx2.broadcast(function(data){
-					if($(data).find("result").text()=="1"){
-						$("#walletSendConfirmStatus").removeClass('hidden').addClass('alert-success').html('txid: <a href="'+explorer_tx+$(data).find("txid").text()+'" target="_blank">'+$(data).find("txid").text()+'</a>');
+					if(data && data.success){
+						$("#walletSendConfirmStatus").removeClass('hidden').addClass('alert-success').html('txid: <a href="'+explorer_tx+data.txid+'" target="_blank">'+data.txid+'</a>');
 					} else {
-						$("#walletSendConfirmStatus").removeClass('hidden').addClass('alert-danger').html(unescape($(data).find("response").text()).replace(/\+/g,' '));
+						var errorMessage = (data && data.response) ? data.response : 'Broadcast failed';
+						$("#walletSendConfirmStatus").removeClass('hidden').addClass('alert-danger').html(errorMessage);
 						$("#walletSendFailTransaction").removeClass('hidden');
 						$("#walletSendFailTransaction textarea").val(signed);
 						thisbtn.attr('disabled',false);
@@ -215,7 +216,7 @@ $(document).ready(function() {
 
 				}, signed);
 			} else {
-				$("#walletSendConfirmStatus").removeClass("hidden").addClass('alert-danger').html("You have a confirmed balance of "+dvalue+" BTC unable to send "+total+" BTC").fadeOut().fadeIn();
+				$("#walletSendConfirmStatus").removeClass("hidden").addClass('alert-danger').html("You have a confirmed balance of "+dvalue+" ROD, unable to send "+total+" ROD").fadeOut().fadeIn();
 				thisbtn.attr('disabled',false);
 			}
 
@@ -306,9 +307,9 @@ $(document).ready(function() {
 			coinjs.addressBalance($("#walletAddress").html(),function(data){
 				if(data["success"]){
 					const v = data["data"][0]["balance"];
-					$("#walletBalance").html(v+" LBC").attr('rel',v).fadeOut().fadeIn();
+					$("#walletBalance").html(v+" ROD").attr('rel',v).fadeOut().fadeIn();
 				} else {
-				$("#walletBalance").html("0.00 LBC").attr('rel',0).fadeOut().fadeIn();
+				$("#walletBalance").html("0.00 ROD").attr('rel',0).fadeOut().fadeIn();
 				}
 
 				$("#walletLoader").addClass("hidden");
@@ -347,7 +348,7 @@ $(document).ready(function() {
 		}
 
 		var paperwallet = window.open();
-		paperwallet.document.write('<h2>BTC PaperWallet</h2><hr><div style="margin-top: 5px; margin-bottom: 5px"><div><h3 style="margin-top: 0">Address (Share)</h3></div><div style="text-align: center;"><div id="qraddress"></div><p>'+$("#newBitcoinAddress").val()+'</p></div></div><hr><div style="margin-top: 5px; margin-bottom: 5px"><div><h3 style="margin-top: 0">Public Key</h3></div><div style="text-align: center;"><div id="qrpubkey"></div><p>'+$("#newPubKey").val()+'</p></div></div><hr><div style="margin-top: 5px; margin-bottom: 5px"><div><h3 style="margin-top: 0">Private Key (KEEP SECRET!)</h3></div><div style="text-align: center;"><div id="qrprivkey"></div><p>'+$("#newPrivKey").val()+'</p></div></div>');
+		paperwallet.document.write('<h2>ROD Paper Wallet</h2><hr><div style="margin-top: 5px; margin-bottom: 5px"><div><h3 style="margin-top: 0">Address (Share)</h3></div><div style="text-align: center;"><div id="qraddress"></div><p>'+$("#newBitcoinAddress").val()+'</p></div></div><hr><div style="margin-top: 5px; margin-bottom: 5px"><div><h3 style="margin-top: 0">Public Key</h3></div><div style="text-align: center;"><div id="qrpubkey"></div><p>'+$("#newPubKey").val()+'</p></div></div><hr><div style="margin-top: 5px; margin-bottom: 5px"><div><h3 style="margin-top: 0">Private Key (KEEP SECRET!)</h3></div><div style="text-align: center;"><div id="qrprivkey"></div><p>'+$("#newPrivKey").val()+'</p></div></div>');
 		paperwallet.document.close();
 		paperwallet.focus();
 		new QRCode(paperwallet.document.getElementById("qraddress"), {text: $("#newBitcoinAddress").val(), width: 125, height: 125});
@@ -408,7 +409,7 @@ $(document).ready(function() {
 		}
 
 		var paperwallet = window.open();
-		paperwallet.document.write('<h2>BTC SegWit PaperWallet</h2><hr><div style="margin-top: 5px; margin-bottom: 5px"><div><h3 style="margin-top: 0">Address (Share)</h3></div><div style="text-align: center;"><div id="qraddress"></div><p>'+$("#newSegWitAddress").val()+'</p></div></div><hr><div style="margin-top: 5px; margin-bottom: 5px"><div><h3 style="margin-top: 0">Public Key</h3></div><div style="text-align: center;"><div id="qrpubkey"></div><p>'+$("#newSegWitPubKey").val()+'</p></div></div><hr><div style="margin-top: 5px; margin-bottom: 5px"><div><h3 style="margin-top: 0">Redeem Script</h3></div><div style="text-align: center;"><div id="qrredeem"></div><p>'+$("#newSegWitRedeemScript").val()+'</p></div></div><hr><div style="margin-top: 5px; margin-bottom: 5px"><div><h3 style="margin-top: 0">Private Key (KEEP SECRET!)</h3></div><div style="text-align: center;"><div id="qrprivkey"></div><p>'+$("#newSegWitPrivKey").val()+'</p></div></div>');
+		paperwallet.document.write('<h2>ROD SegWit Paper Wallet</h2><hr><div style="margin-top: 5px; margin-bottom: 5px"><div><h3 style="margin-top: 0">Address (Share)</h3></div><div style="text-align: center;"><div id="qraddress"></div><p>'+$("#newSegWitAddress").val()+'</p></div></div><hr><div style="margin-top: 5px; margin-bottom: 5px"><div><h3 style="margin-top: 0">Public Key</h3></div><div style="text-align: center;"><div id="qrpubkey"></div><p>'+$("#newSegWitPubKey").val()+'</p></div></div><hr><div style="margin-top: 5px; margin-bottom: 5px"><div><h3 style="margin-top: 0">Redeem Script</h3></div><div style="text-align: center;"><div id="qrredeem"></div><p>'+$("#newSegWitRedeemScript").val()+'</p></div></div><hr><div style="margin-top: 5px; margin-bottom: 5px"><div><h3 style="margin-top: 0">Private Key (KEEP SECRET!)</h3></div><div style="text-align: center;"><div id="qrprivkey"></div><p>'+$("#newSegWitPrivKey").val()+'</p></div></div>');
 		paperwallet.document.close();
 		paperwallet.focus();
 		new QRCode(paperwallet.document.getElementById("qraddress"), {text: $("#newSegWitAddress").val(), width: 110, height: 110});
@@ -759,7 +760,7 @@ $(document).ready(function() {
 				}
 			});
 
-			if(($("#developerDonation").val()*1)>0){
+			if(($("#developerDonation").val()*1)>0 && coinjs.developer){
 				var addr = coinjs.developer;
 				var ad = coinjs.addressDecode(addr);
 				if (ad.version == coinjs.pub){ // p2pkh
@@ -869,7 +870,7 @@ $(document).ready(function() {
 
 			QCodeDecoder().decodeFromVideo(document.getElementById('videoReader'), function(er,data){
 				if(!er){
-					var match = data.match(/^bitcoin\:([1|3|bc1][a-z0-9]{25,50})/i);
+					var match = data.match(/^rod\:([a-z0-9]{25,90})/i);
 					var result = match ? match[1] : data;
 					$(""+$("#qrcode-scanner-callback-to").html()).val(result);
 					$("#qrScanClose").click();
@@ -1177,27 +1178,18 @@ $(document).ready(function() {
 	function rawSubmitDefault(btn){ 
 		var thisbtn = btn;		
 		$(thisbtn).val('Please wait, loading...').attr('disabled',true);
-		$.ajax ({
-			type: "POST",
-			url: coinjs.host+'?uid='+coinjs.uid+'&key='+coinjs.key+'&setmodule=bitcoin&request=sendrawtransaction',
-			data: {'rawtx':$("#rawTransaction").val()},
-			dataType: "xml",
-			error: function(data) {
-				$("#rawTransactionStatus").addClass('alert-danger').removeClass('alert-success').removeClass("hidden").html(" There was an error submitting your request, please try again").prepend('<span class="glyphicon glyphicon-exclamation-sign"></span>');
-			},
-			success: function(data) {
-				$("#rawTransactionStatus").html(unescape($(data).find("response").text()).replace(/\+/g,' ')).removeClass('hidden');
-				if($(data).find("result").text()==1){
-					$("#rawTransactionStatus").addClass('alert-success').removeClass('alert-danger').removeClass("hidden").html(' TXID: ' + $(data).find("txid").text() + '<br> <a href="https://coinb.in/tx/' + $(data).find("txid").text() + '" target="_blank">View on Blockchain</a>');
-				} else {
-					$("#rawTransactionStatus").addClass('alert-danger').removeClass('alert-success').prepend('<span class="glyphicon glyphicon-exclamation-sign"></span> ');
-				}
-			},
-			complete: function(data, status) {
-				$("#rawTransactionStatus").fadeOut().fadeIn();
-				$(thisbtn).val('Submit').attr('disabled',false);				
+		var tx = coinjs.transaction();
+		tx.broadcast(function(data) {
+			if(data && data.success){
+				$("#rawTransactionStatus").addClass('alert-success').removeClass('alert-danger').removeClass("hidden").html(' TXID: ' + data.txid + '<br> <a href="https://explorer.rod.spacexpanse.org/tx/' + data.txid + '" target="_blank">View on Blockchain</a>');
+			} else {
+				var errorMessage = (data && data.response) ? data.response : 'There was an error submitting your request, please try again';
+				$("#rawTransactionStatus").addClass('alert-danger').removeClass('alert-success').removeClass("hidden").html('<span class="glyphicon glyphicon-exclamation-sign"></span> '+errorMessage);
 			}
-		});
+
+			$("#rawTransactionStatus").fadeOut().fadeIn();
+			$(thisbtn).val('Submit').attr('disabled',false);
+		}, $("#rawTransaction").val());
 	}
 
 
@@ -1580,7 +1572,7 @@ $(document).ready(function() {
 			}
 		} else {
 			var qrcode = new QRCode("qrcode");
-			qrstr = "bitcoin:"+$('.address',thisbtn).val();
+			qrstr = "rod:"+$('.address',thisbtn).val();
 		}
 
 		if(qrstr){
@@ -1658,6 +1650,7 @@ $(document).ready(function() {
 
 			coinjs.hdkey.pub =  $("#coinjs_hdpub").val()*1;
 			coinjs.hdkey.prv =  $("#coinjs_hdprv").val()*1;
+			coinjs.bech32.hrp = "rod";
 
 			configureBroadcast();
 			configureGetUnspentTx();
@@ -1681,9 +1674,9 @@ $(document).ready(function() {
 		var o = ($("option:selected",this).attr("rel")).split(";");
 
 		// deal with broadcasting settings
-		if(o[5]=="false"){
-			$("#coinjs_broadcast, #rawTransaction, #rawSubmitBtn, #openBtn").attr('disabled',true);
-			$("#coinjs_broadcast").val("coinb.in");			
+			if(o[5]=="false"){
+				$("#coinjs_broadcast, #rawTransaction, #rawSubmitBtn, #openBtn").attr('disabled',true);
+				$("#coinjs_broadcast").val("rod-web-wallet");			
 		} else {
 			$("#coinjs_broadcast").val(o[5]);
 			$("#coinjs_broadcast, #rawTransaction, #rawSubmitBtn, #openBtn").attr('disabled',false);
@@ -1692,18 +1685,18 @@ $(document).ready(function() {
 		// deal with unspent output settings
 		if(o[6]=="false"){
 			$("#coinjs_utxo, #redeemFrom, #redeemFromBtn, #openBtn, .qrcodeScanner").attr('disabled',true);			
-			$("#coinjs_utxo").val("coinb.in");
+			$("#coinjs_utxo").val("rod-web-wallet");
 		} else {
 			$("#coinjs_utxo").val(o[6]);
 			$("#coinjs_utxo, #redeemFrom, #redeemFromBtn, #openBtn, .qrcodeScanner").attr('disabled',false);
 		}
 
 		// deal with the reset
-		$("#coinjs_pub").val(o[0]);
-		$("#coinjs_priv").val(o[1]);
-		$("#coinjs_multisig").val(o[2]);
-		$("#coinjs_hdpub").val(o[3]);
-		$("#coinjs_hdprv").val(o[4]);
+		$("#coinjs_pub").val('0x3c');
+		$("#coinjs_priv").val('0x4e');
+		$("#coinjs_multisig").val('0x4b');
+		$("#coinjs_hdpub").val('0x488e4ad');
+		$("#coinjs_hdprv").val('0x4881eb2');
 
 		// hide/show custom screen
 		if($("option:selected",this).val()=="custom"){
@@ -1924,28 +1917,19 @@ $(document).ready(function() {
 
 	function feeStats(){
 		$("#feeStatsReload").attr('disabled',true);
-		$.ajax ({
-			type: "GET",
-			url: "https://coinb.in/api/?uid=1&key=12345678901234567890123456789012&setmodule=fees&request=stats",
-			dataType: "xml",
-			error: function(data) {
-			},
-			success: function(data) {
-				$("#fees .recommended .blockHeight").html('<a href="https://coinb.in/height/'+$(data).find("height").text()+'" target="_blank">'+$(data).find("height").text()+'</a>');
-				$("#fees .recommended .blockHash").html($(data).find("block").text());
-				$("#fees .recommended .blockTime").html($(data).find("timestamp").text());
-				$("#fees .recommended .blockDateTime").html(unescape($(data).find("datetime").text()).replace(/\+/g,' '));
-				$("#fees .recommended .txId").html('<a href="https://coinb.in/tx/'+$(data).find("txid").text()+'" target="_blank">'+$(data).find("txid").text()+'</a>');
-				$("#fees .recommended .txSize").html($(data).find("txsize").text());
-				$("#fees .recommended .txFee").html($(data).find("txfee").text());
-				$("#fees .feeSatByte").html($(data).find("satbyte").text());
-
-				mathFees();
-			},
-			complete: function(data, status){
-				$("#feeStatsReload").attr('disabled', false);
-			}
-		});
+		var localSatPerByte = 10;
+		var localFeeRod = (localSatPerByte / 100000000).toFixed(8);
+		var now = new Date();
+		$("#fees .recommended .blockHeight").html('Local estimate (offline)');
+		$("#fees .recommended .blockHash").html('N/A');
+		$("#fees .recommended .blockTime").html('N/A');
+		$("#fees .recommended .blockDateTime").html(now.toISOString());
+		$("#fees .recommended .txId").html('N/A');
+		$("#fees .recommended .txSize").html('N/A');
+		$("#fees .recommended .txFee").html(localFeeRod+' ROD/kB equivalent');
+		$("#fees .feeSatByte").html(localSatPerByte);
+		mathFees();
+		$("#feeStatsReload").attr('disabled', false);
 	}
 
 	/* capture mouse movement to add entropy */
@@ -1981,3 +1965,4 @@ $(document).ready(function() {
 	};
 
 });
+

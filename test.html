@@ -73,6 +73,60 @@
 
     $("#test1Btn").click(function(){
     {
+        var testName = "ROD constants and network prefix checks";
+        var testOutput = [
+            coinjs.pub === 0x3c,
+            coinjs.priv === 0x4e,
+            coinjs.multisig === 0x4b,
+            coinjs.hdkey.pub === 0x0488e4ad,
+            coinjs.hdkey.prv === 0x04881eb2,
+            coinjs.bech32.hrp === "rod"
+        ].every(function(v){ return v === true; }) ? "ok" : "fail";
+        var testExpected = "ok";
+        addTestOutput(testName, testOutput, testExpected);
+    }
+
+    {
+        var testName = "ROD address prefix starts with R";
+        var testInput = "0000000000000000000000000000000000000000000000000000000000000001";
+        coinjs.compressed = true;
+        var rodPubKey = coinjs.newPubkey(testInput);
+        var rodAddress = coinjs.pubkey2address(rodPubKey, coinjs.pub);
+        var testOutput = rodAddress.charAt(0);
+        var testExpected = "R";
+        addTestOutput(testName, testOutput, testExpected);
+    }
+
+    {
+        var testName = "ROD WIF roundtrip preserves private key";
+        var testInput = "62A87AD3272B41E67108FEA10C57BA6ED609F2F7A2264A83B690CD45707090D1";
+        coinjs.compressed = true;
+        var rodWif = coinjs.privkey2wif(testInput);
+        var roundtripPriv = coinjs.wif2privkey(rodWif).privkey;
+        var testOutput = roundtripPriv.toLowerCase();
+        var testExpected = testInput.toLowerCase();
+        addTestOutput(testName, testOutput, testExpected);
+    }
+
+    {
+        var testName = "ROD P2SH version is 75";
+        var testOutput = String(coinjs.multisig);
+        var testExpected = "75";
+        addTestOutput(testName, testOutput, testExpected);
+    }
+
+    {
+        var testName = "ROD bech32 address starts with rod1";
+        var testInput = "0000000000000000000000000000000000000000000000000000000000000001";
+        coinjs.compressed = true;
+        var rodPubKey = coinjs.newPubkey(testInput);
+        var bech32Address = coinjs.bech32Address(rodPubKey).address;
+        var testOutput = bech32Address.slice(0, 4);
+        var testExpected = "rod1";
+        addTestOutput(testName, testOutput, testExpected);
+    }
+
+    {
         var testName = "hex private key to compressed address";
         var testInput = "0000000000000000000000000000000000000000000000000000000000000001";
         var testExpected = "1BgGZ9tcN4rm9KBzDn7KprQz87SZ26SAMH";
@@ -256,7 +310,6 @@
         r.addinput(inputTx, inputN, inputScript, 0xffffffff/*sequence*/);
         r.addoutput(address1, amount);
         var testOutputUnsigned = r.serialize();
-        debugger;
         r.sign(wif, 1/*sighashtype*/);
         var testOutputSigned = r.serialize();
         addTestOutput(testName+" (unsigned)", testOutputUnsigned, testExpectedUnsigned);
@@ -292,7 +345,7 @@
 
 
     // create a lot of timelock scripts, compare them to known ones created using bitcoinjs-lib
-    // focus on edge cases like described in https://github.com/lbryio/coinbin/issues/201
+    // focus on edge cases like described in https://github.com/SpaceXpanse RODio/coinbin/issues/201
     // ranges 80-ff, 8000-ffff, 800000-ffffff, 80000000-ffffffff.
     {
         var testExpected =  "HODL_depositAddress: 2NAx7Sx9B6epdUGyPeUEAU2tJiPectEym4F HODL_redeemScript: 050000008000b175210279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798ac\n" +
@@ -377,3 +430,4 @@
 </script>
 
 </html>
+
