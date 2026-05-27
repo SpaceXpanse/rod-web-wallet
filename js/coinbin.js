@@ -1673,8 +1673,10 @@ $(document).ready(function() {
 
 	$('a[data-toggle="tab"]').on('click', function(e) {
 		e.preventDefault();
-		if(e.target && $(e.target).attr('href')) {
-			history.pushState(null, null, '#'+$(e.target).attr('href').substr(1));
+		var tabTarget = $(this).attr('href');
+		if(tabTarget){
+			$(this).tab('show');
+			history.pushState(null, null, tabTarget);
 		}
 	});
 

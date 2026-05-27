@@ -6,6 +6,28 @@ The format is inspired by Keep a Changelog and follows Semantic Versioning princ
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-05-27
+
+### Added
+- Wallet dashboard refresh guidance in [`index.html`](index.html:245) with supporting styles in [`css/style.css`](css/style.css:484).
+- Wallet action workspace placeholder to clarify where action flows open in [`index.html`](index.html:279).
+
+### Changed
+- Major wallet UX redesign shipped across [`index.html`](index.html:168), [`css/style.css`](css/style.css:290), and [`js/coinbin.js`](js/coinbin.js:121).
+- Wallet page copy now clarifies deterministic behavior: different email/passphrase combinations derive different wallets in [`index.html`](index.html:178).
+- Wallet actions now anchor/scroll to the action workspace area for clearer flow in [`js/coinbin.js`](js/coinbin.js:129).
+- Tab click behavior now explicitly activates Bootstrap tabs before hash updates to keep navigation state consistent in [`js/coinbin.js`](js/coinbin.js:1661).
+
+### Fixed
+- SegWit default option now remains enabled at runtime (no startup override conflict) in [`js/coinbin.js`](js/coinbin.js:133).
+- Wallet label presentation now uses normal capitalization (no forced all-caps) in [`css/style.css`](css/style.css:332).
+- "Need an offline address? Create one instead." now correctly switches active tab state from wallet to New Address in [`js/coinbin.js`](js/coinbin.js:1661).
+- Active tab readability/contrast issues resolved in navbar/tab styling in [`css/style.css`](css/style.css:58).
+- Mediator modal readability fixed by high-contrast modal surface/text/button styling in [`css/style.css`](css/style.css:105).
+
+### Verification
+- Browser verification completed for wallet open flow, action anchoring, modal readability, active tab readability, and wallet-to-New Address navigation behavior.
+
 ### Added
 - Canonical chain parameter snapshot at [`docs/chainparams.0.6.9.cpp`](docs/chainparams.0.6.9.cpp).
 - ROD API reference snapshot at [`docs/rod-api-root.html`](docs/rod-api-root.html).
