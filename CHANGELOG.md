@@ -6,9 +6,13 @@ The format is inspired by Keep a Changelog and follows Semantic Versioning princ
 
 ## [Unreleased]
 
+### Added
+- Phase 1 PWA installability assets: [`manifest.webmanifest`](manifest.webmanifest), [`images/icon-192.png`](images/icon-192.png), [`images/icon-512.png`](images/icon-512.png), and [`images/icon-512-maskable.png`](images/icon-512-maskable.png).
+- Cross-device install metadata in [`index.html`](index.html:12), including manifest link, theme color, icon links, and Apple mobile web app tags.
+
 ## [2.0.0] - 2026-05-27
 
-### Added
+### Added (ROD Integration)
 - Wallet dashboard refresh guidance in [`index.html`](index.html:245) with supporting styles in [`css/style.css`](css/style.css:484).
 - Wallet action workspace placeholder to clarify where action flows open in [`index.html`](index.html:279).
 
@@ -28,7 +32,7 @@ The format is inspired by Keep a Changelog and follows Semantic Versioning princ
 ### Verification
 - Browser verification completed for wallet open flow, action anchoring, modal readability, active tab readability, and wallet-to-New Address navigation behavior.
 
-### Added
+### ROD Migration
 - Canonical chain parameter snapshot at [`docs/chainparams.0.6.9.cpp`](docs/chainparams.0.6.9.cpp).
 - ROD API reference snapshot at [`docs/rod-api-root.html`](docs/rod-api-root.html).
 - Persistent ROD compatibility assertions in [`test.html`](test.html).
