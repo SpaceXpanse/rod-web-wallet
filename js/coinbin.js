@@ -126,13 +126,20 @@ $(document).ready(function() {
 		}
 	}
 
+	function scrollToWalletActionPanel(){
+		var walletActionPanel = $("#walletActionPanel");
+		if(walletActionPanel.length){
+			$("html, body").animate({scrollTop: walletActionPanel.offset().top - 80}, 250);
+		}
+	}
+
 	$("#walletSegwit").on("change", function(){
 		syncWalletSegwitState();
 	});
 
 	var walletSegwitCheckbox = $("#walletSegwit")[0];
-	walletSegwitCheckbox.defaultChecked = false;
-	walletSegwitCheckbox.checked = false;
+	walletSegwitCheckbox.defaultChecked = true;
+	walletSegwitCheckbox.checked = true;
 	syncWalletSegwitState();
 
 	$("#walletToSegWit").click(function(){
@@ -157,12 +164,16 @@ $(document).ready(function() {
 
 	$("#walletShowKeys").click(function(){
 		$(".walletOptions").removeClass("hidden").addClass("hidden");
+		$("#walletActionPlaceholder").addClass("hidden");
 		$("#walletKeys").removeClass("hidden");
+		scrollToWalletActionPanel();
 	});
 
 	$("#walletShowBuy").click(function(){
 		$(".walletOptions").removeClass("hidden").addClass("hidden");
+		$("#walletActionPlaceholder").addClass("hidden");
 		$("#walletBuy").removeClass("hidden");
+		scrollToWalletActionPanel();
 	});
 
 	$("#walletBalance, #walletAddress, #walletQrCode").click(function(){
@@ -315,7 +326,9 @@ $(document).ready(function() {
 
 	$("#walletShowSpend").click(function(){
 		$(".walletOptions").removeClass("hidden").addClass("hidden");
+		$("#walletActionPlaceholder").addClass("hidden");
 		$("#walletSpend").removeClass("hidden");
+		scrollToWalletActionPanel();
 	});
 
 	$("#walletSpendTo .addressAdd").click(function(){
