@@ -47,6 +47,15 @@
 
 		<script type="text/javascript" src="js/coin.js"></script>
 		<script type="text/javascript" src="js/coinbin.js"></script>
+		<script>
+			if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
+				window.addEventListener("load", function () {
+					navigator.serviceWorker.register("./sw.js").catch(function () {
+						/* Intentionally ignored: installability should degrade gracefully */
+					});
+				});
+			}
+		</script>
 	</head>
 
 	<body>
