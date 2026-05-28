@@ -6,10 +6,21 @@ The format is inspired by Keep a Changelog and follows Semantic Versioning princ
 
 ## [Unreleased]
 
+## [2.0.1] - 2026-05-28
+
+### Changed
+- Wallet open flow now defaults to Legacy addresses by disabling default SegWit selection in [`index.html`](index.html:222) and [`js/coinbin.js`](js/coinbin.js:164).
+- Wallet "Modern SegWit address" controls are now hidden in wallet access options in [`index.html`](index.html:221).
+- Wallet receive-card address type chooser dropdown is now hidden in [`index.html`](index.html:278).
+
+### Notes
+- This release is a temporary compatibility adjustment for current API behavior that does not accept Bech32 addresses in wallet lookup flows.
+- New-address generation behavior remains unchanged, including Bech32 generation controls in [`index.html`](index.html:491).
+
 ### Added
 - Phase 1 PWA installability assets: [`manifest.webmanifest`](manifest.webmanifest), [`images/icon-192.png`](images/icon-192.png), [`images/icon-512.png`](images/icon-512.png), and [`images/icon-512-maskable.png`](images/icon-512-maskable.png).
 - Cross-device install metadata in [`index.html`](index.html:12), including manifest link, theme color, icon links, and Apple mobile web app tags.
-- ROD API server health/error checking with a visible warning cue in [`index.html`](index.html), [`css/style.css`](css/style.css), [`js/coinbin.js`](js/coinbin.js), and [`js/coin.js`](js/coin.js).
+- ROD API server health/error checking with a visible warning cue in [`index.html`](index.html:114), [`css/style.css`](css/style.css:169), [`js/coinbin.js`](js/coinbin.js:11), and [`js/coin.js`](js/coin.js:31).
 
 ## [2.0.0] - 2026-05-27
 
