@@ -262,7 +262,8 @@ $(document).ready(function() {
 					if(data && data.success){
 						$("#walletSendConfirmStatus").removeClass('hidden alert-danger').addClass('alert-success').html('Transaction broadcast successfully.<br>txid: <a href="'+explorer_tx+data.txid+'" target="_blank">'+data.txid+'</a>');
 						$("#walletSendFailTransaction").addClass('hidden');
-						thisbtn.attr('disabled',false);
+						thisbtn.addClass('hidden').attr('disabled',true);
+						$("#walletSendBtn").attr('disabled',true);
 					} else {
 						var errorMessage = (data && data.response) ? data.response : 'Broadcast failed';
 						$("#walletSendConfirmStatus").removeClass('hidden alert-success').addClass('alert-danger').html('<span class="glyphicon glyphicon-exclamation-sign"></span> Broadcast failed: '+errorMessage);
@@ -342,6 +343,23 @@ $(document).ready(function() {
 
 	ensureWalletFeeMeetsRelayFloor();
 
+	$("#modalWalletConfirm").on('hidden.bs.modal', function(){
+		$("#walletSendBtn").attr('disabled',false);
+		$("#walletConfirmSend").removeClass('hidden').attr('disabled',false);
+	});
+
+	$("#walletSendResetBtn").click(function(){
+		$("#walletSpendTo .output:gt(0)").remove();
+		$("#walletSpendTo .output:first .addressTo").val('');
+		$("#walletSpendTo .output:first .amount").val('');
+		$("#walletSendStatus").addClass("hidden").html("");
+		$("#walletSendConfirmStatus").addClass("hidden").removeClass('alert-success').removeClass('alert-danger').html("");
+		$("#walletSendFailTransaction").addClass('hidden');
+		$("#walletSendBtn").attr('disabled',false);
+		$("#walletConfirmSend").removeClass('hidden').attr('disabled',false);
+		ensureWalletFeeMeetsRelayFloor();
+	});
+
 	$("#walletSendBtn").click(function(){
 
 		$("#walletSendFailTransaction").addClass('hidden');
@@ -392,7 +410,8 @@ $(document).ready(function() {
 				$("#walletSendConfirmStatus").addClass("hidden").removeClass('alert-success').removeClass('alert-danger').html("");
 				$("#spendAmount").html(total);
 				$("#modalWalletConfirm").modal("show");
-				$("#walletConfirmSend").attr('disabled',false);
+				$("#walletConfirmSend").removeClass('hidden').attr('disabled',false);
+				$("#walletSendBtn").attr('disabled',false);
 			} else {
 				$("#walletSendStatus").removeClass("hidden").html("You are trying to spend "+total+' but have a balance of '+balance);
 			}
