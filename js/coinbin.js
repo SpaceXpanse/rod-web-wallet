@@ -254,32 +254,28 @@ $(document).ready(function() {
 					tx.addoutput($("#walletAddress").html(), change);
 				}
 
-				// clone the transaction with out using coinjs.clone() function as it gives us trouble
-				var tx2 = coinjs.transaction(); 
+				var tx2 = coinjs.transaction();
 				var txunspent = tx2.deserialize(tx.serialize());
-
-				// then sign
 				var signed = txunspent.sign($("#walletKeys .privkey").val());
-
-				// and finally broadcast!
 
 				tx2.broadcast(function(data){
 					if(data && data.success){
-						$("#walletSendConfirmStatus").removeClass('hidden').addClass('alert-success').html('txid: <a href="'+explorer_tx+data.txid+'" target="_blank">'+data.txid+'</a>');
+						$("#walletSendConfirmStatus").removeClass('hidden alert-danger').addClass('alert-success').html('Transaction broadcast successfully.<br>txid: <a href="'+explorer_tx+data.txid+'" target="_blank">'+data.txid+'</a>');
+						$("#walletSendFailTransaction").addClass('hidden');
+						thisbtn.attr('disabled',false);
 					} else {
 						var errorMessage = (data && data.response) ? data.response : 'Broadcast failed';
-						$("#walletSendConfirmStatus").removeClass('hidden').addClass('alert-danger').html(errorMessage);
+						$("#walletSendConfirmStatus").removeClass('hidden alert-success').addClass('alert-danger').html('<span class="glyphicon glyphicon-exclamation-sign"></span> Broadcast failed: '+errorMessage);
 						$("#walletSendFailTransaction").removeClass('hidden');
 						$("#walletSendFailTransaction textarea").val(signed);
 						thisbtn.attr('disabled',false);
 					}
 
-					// update wallet balance
 					walletBalance();
 
 				}, signed);
 			} else {
-				$("#walletSendConfirmStatus").removeClass("hidden").addClass('alert-danger').html("You have a confirmed balance of "+dvalue+" ROD, unable to send "+total+" ROD").fadeOut().fadeIn();
+				$("#walletSendConfirmStatus").removeClass("hidden alert-success").addClass('alert-danger').html("You have a confirmed balance of "+dvalue+" ROD, unable to send "+total+" ROD").fadeOut().fadeIn();
 				thisbtn.attr('disabled',false);
 			}
 
@@ -287,6 +283,64 @@ $(document).ready(function() {
 
 		}, script, script, sequence);
 	});
+
+	function estimateWalletTransactionBytes(){
+		var outputCount = 0;
+		$.each($("#walletSpendTo .output"), function(i,o){
+			var amountValue = $('.amount',o).val()*1;
+			if(amountValue>0){
+				outputCount++;
+			}
+		});
+
+		if(($("#developerDonation").val()*1)>0 && coinjs.developer){
+			outputCount++;
+		}
+
+		var hasChangeOutput = true;
+		var changeOutputCount = hasChangeOutput ? 1 : 0;
+		var totalOutputs = outputCount + changeOutputCount;
+		var estimatedInputCount = 1;
+		var estimatedInputBytes = $("#walletSegwit").is(":checked") ? 109 : 148;
+		var estimatedOutputBytes = 34;
+		var baseBytes = 10;
+		return baseBytes + (estimatedInputCount * estimatedInputBytes) + (totalOutputs * estimatedOutputBytes);
+	}
+
+	function ensureWalletFeeMeetsRelayFloor(){
+		var minimumSatPerByte = 100;
+		var estimatedBytes = estimateWalletTransactionBytes();
+		var minimumFeeSat = estimatedBytes * minimumSatPerByte;
+		var minimumFeeRod = (minimumFeeSat / 100000000);
+		var currentFeeRod = $("#txFee").val()*1;
+
+		if(currentFeeRod < minimumFeeRod){
+			$("#txFee").val(minimumFeeRod.toFixed(8));
+			return {
+				updated: true,
+				minimumFeeRod: minimumFeeRod,
+				estimatedBytes: estimatedBytes,
+				minimumSatPerByte: minimumSatPerByte
+			};
+		}
+
+		return {
+			updated: false,
+			minimumFeeRod: minimumFeeRod,
+			estimatedBytes: estimatedBytes,
+			minimumSatPerByte: minimumSatPerByte
+		};
+	}
+
+	$("#txFee, #developerDonation, #walletSpendTo .amount").on('change keyup', function(){
+		ensureWalletFeeMeetsRelayFloor();
+	});
+
+	$("#walletShowSpend").on('click', function(){
+		ensureWalletFeeMeetsRelayFloor();
+	});
+
+	ensureWalletFeeMeetsRelayFloor();
 
 	$("#walletSendBtn").click(function(){
 

@@ -394,8 +394,22 @@
 		coinjs.ajax(coinjs.rodApi+'/balance/'+encodeURIComponent(address), function(response){
 			try {
 				var parsed = JSON.parse(response);
-				if (typeof parsed.balance !== 'undefined') {
-					callback({'success': true, 'data': [{'balance': parsed.balance}]});
+				if (parsed && parsed.error) {
+					var apiErrorMessage = (parsed.error && parsed.error.message) ? parsed.error.message : 'Balance lookup failed';
+					callback({'success': false, 'error': apiErrorMessage, 'raw': parsed});
+					return;
+				}
+
+				var rawBalance = null;
+				if (parsed && parsed.result && typeof parsed.result.balance !== 'undefined') {
+					rawBalance = parsed.result.balance;
+				} else if (parsed && typeof parsed.balance !== 'undefined') {
+					rawBalance = parsed.balance;
+				}
+
+				if (rawBalance !== null) {
+					var balanceInRod = (rawBalance * 1) / 100000000;
+					callback({'success': true, 'data': [{'balance': balanceInRod.toFixed(8)}], 'raw': parsed});
 				} else {
 					callback({'success': false, 'error': 'Unexpected balance response', 'raw': parsed});
 				}
@@ -1158,21 +1172,39 @@
 			coinjs.ajax(coinjs.rodApi+'/unspent/'+encodeURIComponent(address), function(response){
 				try {
 					var parsed = JSON.parse(response);
+					if (parsed && parsed.error) {
+						var apiErrorMessage = (parsed.error && parsed.error.message) ? parsed.error.message : 'Unspent lookup failed';
+						callback({'success': false, 'error': apiErrorMessage, 'data': []});
+						return;
+					}
+
+					var utxoArray = coinjs.isArray(parsed) ? parsed : (parsed && coinjs.isArray(parsed.result) ? parsed.result : []);
+
+					var fallbackScript = '';
+					var addrDecode = coinjs.addressDecode(address);
+					if (addrDecode && addrDecode.type === 'standard') {
+						var s = coinjs.script();
+						var ph = s.pubkeyHash(address);
+						fallbackScript = Crypto.util.bytesToHex(ph.buffer);
+					}
+
 					var data = [];
-					if (coinjs.isArray(parsed)) {
-						for (var index = 0; index < parsed.length; index++) {
-							var output = parsed[index];
-							data.push({
-								'transaction_hash': output.txid || output.transaction_hash,
-								'vout': output.vout,
-								'value': output.value,
-								'script_pub_key_hex': output.scriptPubKey || output.script_pub_key_hex
-							});
+					for (var index = 0; index < utxoArray.length; index++) {
+						var output = utxoArray[index];
+						var scriptHex = output.scriptPubKey || output.script_pub_key_hex || output.script || '';
+						if (!scriptHex && fallbackScript) {
+							scriptHex = fallbackScript;
 						}
+						data.push({
+							'transaction_hash': output.txid || output.transaction_hash,
+							'vout': (typeof output.index !== 'undefined') ? output.index : output.vout,
+							'value': output.value,
+							'script_pub_key_hex': scriptHex
+						});
 					}
 					callback({'success': true, 'data': data});
 				} catch (error) {
-					callback({'success': false, 'error': 'Invalid unspent response'});
+					callback({'success': false, 'error': 'Invalid unspent response', 'data': []});
 				}
 			}, "GET");
 		}
@@ -1182,7 +1214,14 @@
 			coinjs.ajax(coinjs.rodApi+'/transaction/'+encodeURIComponent(txid), function(response){
 				try {
 					var parsed = JSON.parse(response);
-					var outputs = parsed.vout || [];
+					if (parsed && parsed.error) {
+						var apiErrorMessage = (parsed.error && parsed.error.message) ? parsed.error.message : 'Transaction lookup failed';
+						callback({'success': false, 'error': apiErrorMessage, 'data': []});
+						return;
+					}
+
+					var txData = (parsed && parsed.result) ? parsed.result : parsed;
+					var outputs = txData.vout || [];
 					var data = [];
 					for (var index = 0; index < outputs.length; index++) {
 						var output = outputs[index];
@@ -1197,7 +1236,7 @@
 					}
 					callback({'success': true, 'data': data});
 				} catch (error) {
-					callback({'success': false, 'error': 'Invalid transaction response'});
+					callback({'success': false, 'error': 'Invalid transaction response', 'data': []});
 				}
 			}, "GET");
 		}
@@ -1260,9 +1299,13 @@
 				try {
 					var parsed = JSON.parse(response);
 					var txid = parsed && parsed.result ? parsed.result : '';
-					var errorMessage = parsed && parsed.error ? parsed.error : '';
+					var rawError = parsed && parsed.error ? parsed.error : '';
+					var errorMessage = '';
+					if (rawError) {
+						errorMessage = (typeof rawError === 'object') ? (rawError.message || JSON.stringify(rawError)) : ('' + rawError);
+					}
 					callback({
-						'success': !!txid && !errorMessage,
+						'success': !!txid && !rawError,
 						'txid': txid,
 						'error': errorMessage,
 						'response': errorMessage || txid || 'Unknown broadcast response',
