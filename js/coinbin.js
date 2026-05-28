@@ -8,6 +8,30 @@ $(document).ready(function() {
 
 	var wallet_timer = false;
 
+	function updateApiServerStatus(status){
+		var statusBox = $("#apiServerStatus");
+		if(!statusBox.length){
+			return;
+		}
+
+		if(status && status.online){
+			statusBox.addClass("hidden");
+			return;
+		}
+
+		var message = (status && status.message) ? status.message : "ROD API server is currently unreachable";
+		statusBox.find(".api-server-status-message").text(message+". Balance, UTXO lookup, and broadcast may be unavailable; local address generation and signing still work.");
+		statusBox.removeClass("hidden").fadeOut().fadeIn();
+	}
+
+	$(document).on('coinjsApiStatus', function(event, status){
+		updateApiServerStatus(status);
+	});
+
+	if(coinjs.apiHealthCheck){
+		coinjs.apiHealthCheck();
+	}
+
 	$("#openBtn").click(function(){
 		var email = $("#openEmail").val().toLowerCase();
 		var walletPassword = $("#openPass").val();
@@ -138,8 +162,8 @@ $(document).ready(function() {
 	});
 
 	var walletSegwitCheckbox = $("#walletSegwit")[0];
-	walletSegwitCheckbox.defaultChecked = true;
-	walletSegwitCheckbox.checked = true;
+	walletSegwitCheckbox.defaultChecked = false;
+	walletSegwitCheckbox.checked = false;
 	syncWalletSegwitState();
 
 	$("#walletToSegWit").click(function(){

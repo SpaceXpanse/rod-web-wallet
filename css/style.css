@@ -166,6 +166,17 @@ body {
 	padding-top: 34px;
 }
 
+.api-server-status {
+	margin-bottom: 18px;
+	border-left: 4px solid var(--rod-amber);
+	box-shadow: 0 12px 28px rgba(0, 0, 0, 0.24);
+}
+
+.api-server-status .glyphicon {
+	margin-right: 8px;
+	color: var(--rod-amber);
+}
+
 #content > .tab-content {
 	background: rgba(4, 12, 25, 0.62);
 	border: 1px solid var(--rod-border);

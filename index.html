@@ -111,6 +111,10 @@
 			<div id="content" class="container">
 
 				<noscript class="alert alert-danger center-block"><span class="glyphicon glyphicon-exclamation-sign"></span> This page uses javascript, please enable it to continue!</noscript>
+				<div id="apiServerStatus" class="alert alert-warning api-server-status hidden" role="status" aria-live="polite">
+					<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+					<span class="api-server-status-message">ROD API server is currently unreachable. Balance, UTXO lookup, and broadcast may be unavailable; local address generation and signing still work.</span>
+				</div>
 
 				<div class="tab-content">
 					<div class="tab-pane tab-content active" id="home">
@@ -213,12 +217,12 @@
 												<div>
 													<a href="javascript:;" class="optionsCollapse"><div class="well well-sm"><span class="glyphicon glyphicon-collapse-down" id="glyphcollapse"></span> Address &amp; transaction options</div></a>
 													<div class="hidden optionsAdvanced wallet-advanced-options">
-														<label>Modern SegWit address</label>
-														<p class="checkbox">
-																		<label><input type="checkbox" id="walletSegwit" class="checkbox-inline" checked> Use a SegWit address instead of a regular address. <span class="text-muted"><i>Recommended for lower fees and modern ROD compatibility.</i></span></label></label> <br>
-														<label><input type="radio" id="walletSegwitp2sh" class="walletSegwitType" name="walletSegWitType" value="p2sh"> p2sh address</label> <br>
-														<label><input type="radio" id="walletSegwitBech32" class="walletSegwitType" name="walletSegWitType" value="bech32" checked> bech32 address</label>
-														</p>
+													<label>Modern SegWit address</label>
+													<p class="checkbox hidden">
+																<label><input type="checkbox" id="walletSegwit" class="checkbox-inline"> Use a SegWit address instead of a regular address. <span class="text-muted"><i>Recommended for lower fees and modern ROD compatibility.</i></span></label></label> <br>
+													<label><input type="radio" id="walletSegwitp2sh" class="walletSegwitType" name="walletSegWitType" value="p2sh"> p2sh address</label> <br>
+													<label><input type="radio" id="walletSegwitBech32" class="walletSegwitType" name="walletSegWitType" value="bech32"> bech32 address</label>
+													</p>
 
 														<label>Allow fee bumping later (RBF)</label>
 														<p class="checkbox">

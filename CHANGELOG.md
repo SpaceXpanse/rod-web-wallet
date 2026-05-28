@@ -9,6 +9,7 @@ The format is inspired by Keep a Changelog and follows Semantic Versioning princ
 ### Added
 - Phase 1 PWA installability assets: [`manifest.webmanifest`](manifest.webmanifest), [`images/icon-192.png`](images/icon-192.png), [`images/icon-512.png`](images/icon-512.png), and [`images/icon-512-maskable.png`](images/icon-512-maskable.png).
 - Cross-device install metadata in [`index.html`](index.html:12), including manifest link, theme color, icon links, and Apple mobile web app tags.
+- ROD API server health/error checking with a visible warning cue in [`index.html`](index.html), [`css/style.css`](css/style.css), [`js/coinbin.js`](js/coinbin.js), and [`js/coin.js`](js/coin.js).
 
 ## [2.0.0] - 2026-05-27
 

@@ -28,6 +28,42 @@
 	coinjs.uid = '1';
 	coinjs.key = '12345678901234567890123456789012';
 	coinjs.rodApi = "http://api.spacexpanse.org:1234";
+	coinjs.apiTimeout = 8000;
+
+	coinjs.reportApiStatus = function(isOnline, message, url, status){
+		var detail = {
+			'online': isOnline,
+			'message': message || '',
+			'url': url || '',
+			'status': status || 0
+		};
+
+		if(window.jQuery){
+			jQuery(document).trigger('coinjsApiStatus', [detail]);
+		}
+
+		if(typeof window.CustomEvent == 'function'){
+			window.dispatchEvent(new CustomEvent('coinjsApiStatus', {'detail': detail}));
+		}
+	};
+
+	coinjs.apiHealthCheck = function(callback){
+		coinjs.ajax(coinjs.rodApi+'/info', function(response){
+			try {
+				var parsed = JSON.parse(response);
+				var isHealthy = !!parsed && !parsed.error;
+				coinjs.reportApiStatus(isHealthy, isHealthy ? '' : (parsed.error || 'ROD API server returned an error'), coinjs.rodApi+'/info', isHealthy ? 200 : 0);
+				if(callback){
+					callback({'success': isHealthy, 'data': parsed});
+				}
+			} catch (error) {
+				coinjs.reportApiStatus(false, 'ROD API server returned an invalid health response', coinjs.rodApi+'/info', 0);
+				if(callback){
+					callback({'success': false, 'error': 'Invalid API health response'});
+				}
+			}
+		}, "GET");
+	}
 
 
 	/* start of address functions */
@@ -2033,9 +2069,32 @@
 		}
 
 		x.open(m, u, true);
+		x.timeout = coinjs.apiTimeout;
 		x.onreadystatechange=function(){
-			if((x.readyState==4) && f)
-				f(x.responseText);
+			if((x.readyState==4) && f){
+				if(x.status >= 200 && x.status < 300){
+					coinjs.reportApiStatus(true, '', u, x.status);
+					f(x.responseText);
+				} else {
+					var statusMessage = x.status ? 'ROD API server returned HTTP '+x.status : 'ROD API server is unreachable';
+					coinjs.reportApiStatus(false, statusMessage, u, x.status);
+					f(x.responseText || JSON.stringify({'error': statusMessage}));
+				}
+			}
+		};
+		x.ontimeout=function(){
+			var timeoutMessage = 'ROD API server request timed out';
+			coinjs.reportApiStatus(false, timeoutMessage, u, 0);
+			if(f){
+				f(JSON.stringify({'error': timeoutMessage}));
+			}
+		};
+		x.onerror=function(){
+			var errorMessage = 'ROD API server is unreachable';
+			coinjs.reportApiStatus(false, errorMessage, u, 0);
+			if(f){
+				f(JSON.stringify({'error': errorMessage}));
+			}
 		};
 
 		if(m == 'POST'){
