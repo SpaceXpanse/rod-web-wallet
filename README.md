@@ -1,7 +1,7 @@
 coinbin
 =======
 
-A Open Source Browser Based SpaceXpanse ROD Wallet. Version 2.0.0 by OutCast3k
+A Open Source Browser Based SpaceXpanse ROD Wallet. Version 2.0.2-beta by OutCast3k
 
 Live version available at http://rod-web-wallet/ or coinbin3ravkwb24f7rmxx6w3snkjw45jhs5lxbh3yfeg3vpt6janwqd.onion
 

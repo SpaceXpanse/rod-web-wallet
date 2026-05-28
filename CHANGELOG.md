@@ -6,6 +6,22 @@ The format is inspired by Keep a Changelog and follows Semantic Versioning princ
 
 ## [Unreleased]
 
+## [2.0.2-beta] - 2026-05-28
+
+### Added
+- Wallet send reset control now has a stable selector [`#walletSendResetBtn`](index.html:375), enabling reliable reset wiring for spend-flow state restoration.
+
+### Changed
+- Wallet send-confirm modal flow now hides/disables modal send action after successful broadcast to prevent accidental duplicate submissions in [`js/coinbin.js`](js/coinbin.js:261).
+- Wallet modal lifecycle now restores send controls on modal close (`hidden.bs.modal`) so a new intentional send flow can be started cleanly in [`js/coinbin.js`](js/coinbin.js:345).
+- Wallet send flow now enforces a local relay-fee floor pre-check using [`estimateWalletTransactionBytes()`](js/coinbin.js:287) and [`ensureWalletFeeMeetsRelayFloor()`](js/coinbin.js:311).
+
+### Fixed
+- ROD API JSON-RPC envelope parsing now consistently unwraps `result` for balance/unspent/transaction paths in [`js/coin.js`](js/coin.js:386), [`js/coin.js`](js/coin.js:1170), and [`js/coin.js`](js/coin.js:1212).
+- Broadcast error rendering now stringifies object-form API errors (e.g. `error.message`) instead of showing `[object Object]` in [`js/coin.js`](js/coin.js:1271).
+- Wallet send-confirm status now differentiates success vs failure and surfaces failed signed tx recovery data in [`js/coinbin.js`](js/coinbin.js:263).
+- Wallet reset action now clears spend/status state and restores send controls in [`js/coinbin.js`](js/coinbin.js:351).
+
 ## [2.0.1] - 2026-05-28
 
 ### Changed
