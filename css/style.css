@@ -760,7 +760,7 @@ body {
 	height: 34px;
 	border: 2px solid rgba(126, 233, 255, 0.8);
 	border-radius: 50%;
-	background: #071124 url('https://www.spacexpanse.org/img/about.png') center / cover no-repeat;
+	background: #071124 url('../images/about.png') center / cover no-repeat;
 	box-shadow: 0 0 18px rgba(9, 199, 247, 0.6);
 	cursor: pointer;
 }
@@ -770,7 +770,7 @@ body {
 	height: 34px;
 	border: 2px solid rgba(126, 233, 255, 0.8);
 	border-radius: 50%;
-	background: #071124 url('https://www.spacexpanse.org/img/about.png') center / cover no-repeat;
+	background: #071124 url('../images/about.png') center / cover no-repeat;
 	box-shadow: 0 0 18px rgba(9, 199, 247, 0.6);
 	cursor: pointer;
 }
