@@ -29,6 +29,6 @@
 
 ## External Dependencies and Services
 
-- Public ROD API at `http://api.spacexpanse.org:1234`.
+- Public ROD API at `https://api.spacexpanse.org:1234`.
 - Upstream SpaceXpanse core parameters represented locally by [`docs/chainparams.0.6.9.cpp`](../../docs/chainparams.0.6.9.cpp).
 - Browser runtime capabilities for cryptography, storage-less local execution, and optional service-worker support.

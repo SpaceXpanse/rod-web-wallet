@@ -27,7 +27,7 @@
 	coinjs.host = ('https:'==document.location.protocol?'https://':'http://')+coinjs.hostname+'/api/';
 	coinjs.uid = '1';
 	coinjs.key = '12345678901234567890123456789012';
-	coinjs.rodApi = "http://api.spacexpanse.org:1234";
+	coinjs.rodApi = "https://api.spacexpanse.org:1234";
 	coinjs.apiTimeout = 8000;
 
 	coinjs.reportApiStatus = function(isOnline, message, url, status){

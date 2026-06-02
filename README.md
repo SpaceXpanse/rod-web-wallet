@@ -36,6 +36,5 @@ rod-web-wallet supports a number of key features such as:
 - Broadcast flow is JSON-normalized against the ROD API POST /broadcast response format (`{result,error,id}`).
 
 Donation is disabled by default (`0`) in this ROD build to avoid accidental sends to non-ROD addresses.
-ROD API endpoint defaults to `http://api.spacexpanse.org:1234`.
-HTTPS probe to `https://api.spacexpanse.org:1234` may fail depending on current server TLS availability.
+ROD API endpoint defaults to `https://api.spacexpanse.org:1234`.
 

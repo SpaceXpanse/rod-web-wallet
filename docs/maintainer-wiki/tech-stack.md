@@ -25,7 +25,7 @@
 
 ## External Integrations
 
-- Default public API endpoint: `http://api.spacexpanse.org:1234` configured in [`js/coin.js`](../../js/coin.js).
+- Default public API endpoint: `https://api.spacexpanse.org:1234` configured in [`js/coin.js`](../../js/coin.js).
 - Protocol reference snapshot stored in [`docs/chainparams.0.6.9.cpp`](../../docs/chainparams.0.6.9.cpp).
 - API reference snapshot stored in [`docs/rod-api-root.html`](../../docs/rod-api-root.html).
 

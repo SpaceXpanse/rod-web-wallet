@@ -88,4 +88,4 @@ The format is inspired by Keep a Changelog and follows Semantic Versioning princ
 - Final smoke verification after cleanup completed (13/13 passing).
 
 ### Notes
-- Public API endpoint currently configured as `http://api.spacexpanse.org:1234` in [`js/coin.js`](js/coin.js) because HTTPS probing for the same host/port failed during implementation.
+- Public API endpoint now uses `https://api.spacexpanse.org:1234` in [`js/coin.js`](js/coin.js).
