@@ -8,6 +8,182 @@ $(document).ready(function() {
 
 	var wallet_timer = false;
 	var openWalletData = false;
+	var turnstileState = {
+		loginToken: '',
+		broadcastToken: '',
+		loginWidgetIds: [],
+		broadcastWidgetIds: []
+	};
+
+	function isTurnstileAvailable(){
+		return typeof window.turnstile !== 'undefined' && !!coinjs.turnstileSiteKey;
+	}
+
+	function isBroadcastProxyEnabled(){
+		return !!coinjs.broadcastProxy;
+	}
+
+	function setTurnstileNotice(selector, message, shouldShow){
+		var notice = $(selector);
+		if(!notice.length){
+			return;
+		}
+
+		notice.html('<span class="glyphicon glyphicon-exclamation-sign"></span> '+message);
+		notice.toggleClass('hidden', !shouldShow);
+	}
+
+	function resetTurnstileWidgets(widgetIds){
+		if(!isTurnstileAvailable()){
+			return;
+		}
+
+		$.each(widgetIds, function(index, widgetId){
+			try {
+				window.turnstile.reset(widgetId);
+			} catch (error) {
+				/* Turnstile reset should fail quietly */
+			}
+		});
+	}
+
+	function resetLoginTurnstile(){
+		turnstileState.loginToken = '';
+		resetTurnstileWidgets(turnstileState.loginWidgetIds);
+	}
+
+	function resetBroadcastTurnstile(){
+		turnstileState.broadcastToken = '';
+		resetTurnstileWidgets(turnstileState.broadcastWidgetIds);
+	}
+
+	function renderTurnstileWidget(selector, action, tokenHandler, expiredHandler, errorHandler){
+		if(!isTurnstileAvailable()){
+			return null;
+		}
+
+		var target = $(selector);
+		if(!target.length){
+			return null;
+		}
+
+		target.empty();
+		return window.turnstile.render(selector, {
+			sitekey: coinjs.turnstileSiteKey,
+			action: action,
+			appearance: 'always',
+			callback: function(token){
+				tokenHandler(token);
+			},
+			'expired-callback': function(){
+				expiredHandler();
+			},
+			'error-callback': function(){
+				errorHandler();
+			}
+		});
+	}
+
+	function renderTurnstileWidgets(){
+		setTurnstileNotice('#walletLoginTurnstileNotice', 'Wallet open requires the Turnstile security check. If the widget does not load, refresh the page or use a connection that can reach Cloudflare.', !isTurnstileAvailable());
+		setTurnstileNotice('#broadcastTurnstileNotice', 'Broadcast protection is enabled. Complete the Turnstile security check before submitting a signed transaction.', isBroadcastProxyEnabled() && !isTurnstileAvailable());
+		setTurnstileNotice('#walletBroadcastTurnstileNotice', 'Complete the Turnstile security check before broadcasting this wallet transaction.', isBroadcastProxyEnabled() && !isTurnstileAvailable());
+
+		if(!isTurnstileAvailable()){
+			return;
+		}
+
+		turnstileState.loginWidgetIds = [];
+		turnstileState.broadcastWidgetIds = [];
+
+		var loginPrimaryWidgetId = renderTurnstileWidget('#walletLoginTurnstile', coinjs.turnstileActions.login, function(token){
+			turnstileState.loginToken = token;
+			$('#openLoginStatus').addClass('hidden').html('');
+		}, function(){
+			turnstileState.loginToken = '';
+		}, function(){
+			turnstileState.loginToken = '';
+			setTurnstileNotice('#walletLoginTurnstileNotice', 'Wallet open requires the Turnstile security check. If the widget does not load, refresh the page or use a connection that can reach Cloudflare.', true);
+		});
+
+		var loginWifWidgetId = renderTurnstileWidget('#walletLoginTurnstileWif', coinjs.turnstileActions.login, function(token){
+			turnstileState.loginToken = token;
+			$('#openWifStatus').addClass('hidden').html('');
+		}, function(){
+			turnstileState.loginToken = '';
+		}, function(){
+			turnstileState.loginToken = '';
+			setTurnstileNotice('#walletLoginTurnstileNotice', 'Wallet open requires the Turnstile security check. If the widget does not load, refresh the page or use a connection that can reach Cloudflare.', true);
+		});
+
+		var broadcastWidgetId = renderTurnstileWidget('#broadcastTurnstile', coinjs.turnstileActions.broadcast, function(token){
+			turnstileState.broadcastToken = token;
+			$('#rawTransactionStatus').addClass('hidden').html('');
+		}, function(){
+			turnstileState.broadcastToken = '';
+		}, function(){
+			turnstileState.broadcastToken = '';
+			setTurnstileNotice('#broadcastTurnstileNotice', 'Broadcast protection is enabled. Complete the Turnstile security check before submitting a signed transaction.', true);
+		});
+
+		var walletBroadcastWidgetId = renderTurnstileWidget('#walletBroadcastTurnstile', coinjs.turnstileActions.broadcast, function(token){
+			turnstileState.broadcastToken = token;
+			$('#walletSendConfirmStatus').addClass('hidden').html('');
+		}, function(){
+			turnstileState.broadcastToken = '';
+		}, function(){
+			turnstileState.broadcastToken = '';
+			setTurnstileNotice('#walletBroadcastTurnstileNotice', 'Complete the Turnstile security check before broadcasting this wallet transaction.', true);
+		});
+
+		$.each([loginPrimaryWidgetId, loginWifWidgetId], function(index, widgetId){
+			if(widgetId !== null){
+				turnstileState.loginWidgetIds.push(widgetId);
+			}
+		});
+
+		$.each([broadcastWidgetId, walletBroadcastWidgetId], function(index, widgetId){
+			if(widgetId !== null){
+				turnstileState.broadcastWidgetIds.push(widgetId);
+			}
+		});
+	}
+
+	function ensureLoginTurnstile(selector){
+		if(!coinjs.turnstileSiteKey){
+			return true;
+		}
+
+		if(!isTurnstileAvailable()){
+			showWalletLoginError(selector, 'Cloudflare Turnstile is unavailable. Refresh the page and ensure Cloudflare resources are reachable before opening the wallet.');
+			return false;
+		}
+
+		if(!turnstileState.loginToken){
+			showWalletLoginError(selector, 'Complete the Turnstile security check before opening the wallet.');
+			return false;
+		}
+
+		return true;
+	}
+
+	function ensureBroadcastTurnstile(statusSelector, unavailableMessage, incompleteMessage){
+		if(!isBroadcastProxyEnabled()){
+			return true;
+		}
+
+		if(!isTurnstileAvailable()){
+			$(statusSelector).removeClass('hidden alert-success').addClass('alert-danger').html('<span class="glyphicon glyphicon-exclamation-sign"></span> '+unavailableMessage);
+			return false;
+		}
+
+		if(!turnstileState.broadcastToken){
+			$(statusSelector).removeClass('hidden alert-success').addClass('alert-danger').html('<span class="glyphicon glyphicon-exclamation-sign"></span> '+incompleteMessage);
+			return false;
+		}
+
+		return true;
+	}
 
 	function updateApiServerStatus(status){
 		var statusBox = $("#apiServerStatus");
@@ -32,6 +208,8 @@ $(document).ready(function() {
 	if(coinjs.apiHealthCheck){
 		coinjs.apiHealthCheck();
 	}
+
+	renderTurnstileWidgets();
 
 	function getWalletAddressType(){
 		if($("#walletSegwit").is(":checked")){
@@ -122,6 +300,10 @@ $(document).ready(function() {
 	}
 
 	$("#openBtn").click(function(){
+		if(!ensureLoginTurnstile('#openLoginStatus')){
+			return;
+		}
+
 		var email = $("#openEmail").val().toLowerCase();
 		var walletPassword = $("#openPass").val();
 		var minimumWalletPasswordLength = 16;
@@ -173,6 +355,10 @@ $(document).ready(function() {
 	});
 
 	$("#openWifBtn").click(function(){
+		if(!ensureLoginTurnstile('#openWifStatus')){
+			return;
+		}
+
 		var wif = $.trim($("#openWifKey").val());
 		$("#openWifStatus").html("").addClass("hidden");
 
@@ -218,6 +404,7 @@ $(document).ready(function() {
 
 		$("#openLoginStatus").html("").hide();
 		$("#openWifStatus").html("").hide();
+		resetLoginTurnstile();
 	});
 
 	function syncWalletSegwitState(){
@@ -275,6 +462,10 @@ $(document).ready(function() {
 	});
 
 	$("#walletConfirmSend").click(function(){
+		if(!ensureBroadcastTurnstile('#walletSendConfirmStatus', 'Broadcast protection is enabled but Turnstile is unavailable. Load the Turnstile widget before sending.', 'Complete the Turnstile security check before broadcasting this wallet transaction.')){
+			return;
+		}
+
 		var thisbtn = $(this);
 		var tx = coinjs.transaction();
 		var txfee = $("#txFee");
@@ -335,26 +526,28 @@ $(document).ready(function() {
 				var txunspent = tx2.deserialize(tx.serialize());
 				var signed = txunspent.sign($("#walletKeys .privkey").val());
 
-				tx2.broadcast(function(data){
-					$("#walletLoader").addClass("hidden");
-					if(data && data.success){
-						$("#walletSendConfirmStatus").removeClass('hidden alert-danger').addClass('alert-success').html('Transaction broadcast successfully.<br>txid: <a href="'+explorer_tx+data.txid+'" target="_blank">'+data.txid+'</a>');
-						$("#walletSendFailTransaction").addClass('hidden');
-						thisbtn.addClass('hidden').attr('disabled',true);
-						$("#walletSendBtn").attr('disabled',true);
-					} else {
-						var errorMessage = (data && data.response) ? data.response : 'Broadcast failed';
-						$("#walletSendConfirmStatus").removeClass('hidden alert-success').addClass('alert-danger').html('<span class="glyphicon glyphicon-exclamation-sign"></span> Broadcast failed: '+errorMessage);
-						$("#walletSendFailTransaction").removeClass('hidden');
-						$("#walletSendFailTransaction textarea").val(signed);
-						thisbtn.attr('disabled',false);
-						$("#modalWalletConfirm").modal('hide');
-						$("#walletSendBtn").attr('disabled',false);
-					}
+					tx2.broadcast(function(data){
+						$("#walletLoader").addClass("hidden");
+						if(data && data.success){
+							$("#walletSendConfirmStatus").removeClass('hidden alert-danger').addClass('alert-success').html('Transaction broadcast successfully.<br>txid: <a href="'+explorer_tx+data.txid+'" target="_blank">'+data.txid+'</a>');
+							$("#walletSendFailTransaction").addClass('hidden');
+							thisbtn.addClass('hidden').attr('disabled',true);
+							$("#walletSendBtn").attr('disabled',true);
+							resetBroadcastTurnstile();
+						} else {
+							var errorMessage = (data && data.response) ? data.response : 'Broadcast failed';
+							$("#walletSendConfirmStatus").removeClass('hidden alert-success').addClass('alert-danger').html('<span class="glyphicon glyphicon-exclamation-sign"></span> Broadcast failed: '+errorMessage);
+							$("#walletSendFailTransaction").removeClass('hidden');
+							$("#walletSendFailTransaction textarea").val(signed);
+							thisbtn.attr('disabled',false);
+							$("#modalWalletConfirm").modal('hide');
+							$("#walletSendBtn").attr('disabled',false);
+							resetBroadcastTurnstile();
+						}
 
 					walletBalance();
 
-				}, signed);
+				}, signed, turnstileState.broadcastToken, coinjs.turnstileActions.broadcast);
 			} else {
 				$("#walletSendConfirmStatus").removeClass("hidden alert-success").addClass('alert-danger').html("You have a confirmed balance of "+dvalue+" ROD, unable to send "+total+" ROD").fadeOut().fadeIn();
 				thisbtn.attr('disabled',false);
@@ -493,6 +686,7 @@ $(document).ready(function() {
 		$("#walletSendFailTransaction").addClass('hidden');
 		$("#walletSendBtn").attr('disabled',false);
 		$("#walletConfirmSend").removeClass('hidden').attr('disabled',false);
+		resetBroadcastTurnstile();
 		walletFeeWasManuallyEdited = false;
 		ensureWalletFeeMeetsRelayFloor();
 	});
@@ -1512,25 +1706,31 @@ $(document).ready(function() {
 	/* broadcast a transaction */
 
 	$("#rawSubmitBtn").click(function(){
-		rawSubmitDefault(this);
+		rawSubmitDefault(this, turnstileState.broadcastToken);
 	});
 
 	// broadcast transaction via coinbin (default)
-	function rawSubmitDefault(btn){ 
+	function rawSubmitDefault(btn, turnstileToken){ 
+		if(!ensureBroadcastTurnstile('#rawTransactionStatus', 'Broadcast protection is enabled but Turnstile is unavailable. Configure and load the widget before submitting a signed transaction.', 'Complete the Turnstile security check before broadcasting this transaction.')){
+			return;
+		}
+
 		var thisbtn = btn;		
 		$(thisbtn).val('Please wait, loading...').attr('disabled',true);
 		var tx = coinjs.transaction();
 		tx.broadcast(function(data) {
 			if(data && data.success){
 				$("#rawTransactionStatus").addClass('alert-success').removeClass('alert-danger').removeClass("hidden").html(' TXID: ' + data.txid + '<br> <a href="https://explorer.rod.spacexpanse.org/tx/' + data.txid + '" target="_blank">View on Blockchain</a>');
+				resetBroadcastTurnstile();
 			} else {
 				var errorMessage = (data && data.response) ? data.response : 'There was an error submitting your request, please try again';
 				$("#rawTransactionStatus").addClass('alert-danger').removeClass('alert-success').removeClass("hidden").html('<span class="glyphicon glyphicon-exclamation-sign"></span> '+errorMessage);
+				resetBroadcastTurnstile();
 			}
 
 			$("#rawTransactionStatus").fadeOut().fadeIn();
 			$(thisbtn).val('Submit').attr('disabled',false);
-		}, $("#rawTransaction").val());
+		}, $("#rawTransaction").val(), turnstileToken, coinjs.turnstileActions.broadcast);
 	}
 
 
@@ -2104,9 +2304,7 @@ $(document).ready(function() {
 	$("#coinjs_coin").change();
 
 	function configureBroadcast(){
-		$("#rawSubmitBtn").click(function(){
-			rawSubmitDefault(this); // revert to default
-		});
+		resetBroadcastTurnstile();
 	}
 
 	function configureGetUnspentTx(){

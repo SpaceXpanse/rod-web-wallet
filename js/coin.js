@@ -29,6 +29,12 @@
 	coinjs.key = '12345678901234567890123456789012';
 	coinjs.rodApi = "https://api.spacexpanse.org:1234";
 	coinjs.apiTimeout = 8000;
+	coinjs.turnstileSiteKey = "0x4AAAAAADjjqVb5OL4YPG5p";
+	coinjs.turnstileActions = {
+		'login': 'rod-wallet-login',
+		'broadcast': 'rod-broadcast'
+	};
+	coinjs.broadcastProxy = "";
 
 	coinjs.reportApiStatus = function(isOnline, message, url, status){
 		var detail = {
@@ -1293,19 +1299,32 @@
 		}
 
 		/* broadcast a transaction */
-		r.broadcast = function(callback, txhex){
+		r.broadcast = function(callback, txhex, turnstileToken, turnstileAction){
 			var tx = txhex || this.serialize();
-			coinjs.ajax(coinjs.rodApi+'/broadcast', function(response){
+			var broadcastUrl = coinjs.broadcastProxy || (coinjs.rodApi+'/broadcast');
+			var requestBody = coinjs.broadcastProxy ? JSON.stringify({
+				'token': turnstileToken || '',
+				'raw': tx,
+				'action': turnstileAction || coinjs.turnstileActions.broadcast
+			}) : ('raw='+encodeURIComponent(tx));
+			var requestHeaders = coinjs.broadcastProxy ? {'Content-Type':'application/json'} : null;
+			coinjs.ajax(broadcastUrl, function(response){
 				try {
 					var parsed = JSON.parse(response);
 					var txid = parsed && parsed.result ? parsed.result : '';
 					var rawError = parsed && parsed.error ? parsed.error : '';
+					if (coinjs.broadcastProxy && parsed && parsed.success && parsed.txid) {
+						txid = parsed.txid;
+						rawError = parsed.error || '';
+					}
 					var errorMessage = '';
 					if (rawError) {
 						errorMessage = (typeof rawError === 'object') ? (rawError.message || JSON.stringify(rawError)) : ('' + rawError);
+					} else if (coinjs.broadcastProxy && parsed && !parsed.success) {
+						errorMessage = parsed.response || parsed.message || 'Broadcast failed';
 					}
 					callback({
-						'success': !!txid && !rawError,
+						'success': !!txid && !errorMessage,
 						'txid': txid,
 						'error': errorMessage,
 						'response': errorMessage || txid || 'Unknown broadcast response',
@@ -1314,7 +1333,7 @@
 				} catch (error) {
 					callback({'success': false, 'txid': '', 'error': 'Invalid broadcast response', 'response': 'Invalid broadcast response'});
 				}
-			}, "POST", 'raw='+encodeURIComponent(tx));
+			}, "POST", requestBody, requestHeaders);
 		}
 
 		/* generate the transaction hash to sign from a transaction input */
@@ -2095,7 +2114,7 @@
 	}
 
 	/* raw ajax function to avoid needing bigger frame works like jquery, mootools etc */
-	coinjs.ajax = function(u, f, m, a){
+	coinjs.ajax = function(u, f, m, a, headers){
 		var x = false;
 		try{
 			x = new ActiveXObject('Msxml2.XMLHTTP')
@@ -2142,6 +2161,14 @@
 
 		if(m == 'POST'){
 			x.setRequestHeader('Content-type','application/x-www-form-urlencoded');
+		}
+
+		if(headers){
+			for(var headerName in headers){
+				if(headers.hasOwnProperty(headerName)){
+					x.setRequestHeader(headerName, headers[headerName]);
+				}
+			}
 		}
 
 		x.send(a);

@@ -5,6 +5,15 @@
 1. Serve the repository as static files or open a local hosted copy with [`index.html`](../../index.html) as the entry point.
 2. For service-worker/PWA behavior, use HTTPS or localhost because registration is gated in [`index.html`](../../index.html).
 3. Ensure the public ROD API endpoint in [`js/coin.js`](../../js/coin.js) is reachable if testing balance, UTXO lookup, or broadcast flows.
+4. If testing protected broadcast, deploy [`workers/turnstile-broadcast-proxy.js`](../../workers/turnstile-broadcast-proxy.js), set `TURNSTILE_SECRET` as a Worker secret binding, optionally set `ALLOWED_ORIGIN`, and point [`coinjs.broadcastProxy`](../../js/coin.js) at the deployed `/broadcast` URL.
+
+## Verify Turnstile Integration
+
+1. Load the wallet from [`index.html`](../../index.html) and confirm the explicit Turnstile loader can render widget slots for wallet-open and broadcast paths, or fall back to the visible notice when the widget cannot load.
+2. Confirm [`#openBtn`](../../index.html) and [`#openWifBtn`](../../index.html) remain gated by Turnstile state managed in [`js/coinbin.js`](../../js/coinbin.js), and that logout resets the login-gate widget state.
+3. Confirm raw broadcast and wallet confirm-send flows collect the current Turnstile token before calling broadcast logic in [`js/coinbin.js`](../../js/coinbin.js) and [`r.broadcast()`](../../js/coin.js:1252).
+4. If [`coinjs.broadcastProxy`](../../js/coin.js) is configured, verify the Worker in [`workers/turnstile-broadcast-proxy.js`](../../workers/turnstile-broadcast-proxy.js) rejects missing/invalid tokens, enforces the `rod-broadcast` action, and forwards accepted raw transactions to the public ROD API.
+5. Verify the Turnstile secret is not present in any static file, committed config, or browser-visible payload, and remains only in Worker environment bindings.
 
 ## Verify Wallet Send Fee Behavior
 
@@ -32,4 +41,5 @@
 ## Validation Status
 
 - No `npm`, `package.json`, or `docs:check` script exists in the current workspace snapshot, so there is no built-in documentation validation command to run yet.
+- Turnstile/Worker sanity can still be checked with `node --check` against [`js/coin.js`](../../js/coin.js), [`js/coinbin.js`](../../js/coinbin.js), and [`workers/turnstile-broadcast-proxy.js`](../../workers/turnstile-broadcast-proxy.js), but that is a code syntax check rather than a dedicated documentation validator.
 - If tooling is added later, document the exact validation command here and run it before documentation-heavy commits.

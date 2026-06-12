@@ -38,3 +38,35 @@ rod-web-wallet supports a number of key features such as:
 Donation is disabled by default (`0`) in this ROD build to avoid accidental sends to non-ROD addresses.
 ROD API endpoint defaults to `https://api.spacexpanse.org:1234`.
 
+## Deploying on Cloudflare Pages
+
+This repository is compatible with Cloudflare Pages for static hosting.
+
+Recommended setup:
+- Connect the repository to Cloudflare Pages.
+- Use the repository root as the build context.
+- Use `exit 0` as the Build command.
+- Set the Build output directory to `/`.
+- For the static site, the Pages deployment will serve `index.html`, `js/`, `css/`, `images/`, and other assets directly.
+
+## Cloudflare Turnstile broadcast proxy
+
+- Client-side Turnstile widgets use the public site key configured in [`js/coin.js`](js/coin.js).
+- Direct read-only API calls remain unchanged.
+- Protected broadcast can be enabled by setting [`coinjs.broadcastProxy`](js/coin.js) to your deployed Worker `/broadcast` URL.
+- The Worker source is provided in [`workers/turnstile-broadcast-proxy.js`](workers/turnstile-broadcast-proxy.js).
+- Deploy that Worker code in the Cloudflare dashboard or via Wrangler.
+- Set the Turnstile secret only as a Cloudflare Worker secret binding, for example `TURNSTILE_SECRET`.
+- Optionally set `ALLOWED_ORIGIN` in the Worker environment to the wallet origin allowed to call the proxy.
+- Do not place the Turnstile secret in any static file, commit, or frontend configuration.
+- After deploying the Worker, update [`js/coin.js`](js/coin.js) or configure the site to set `coinjs.broadcastProxy` to the Worker `/broadcast` endpoint.
+
+## Deployment checklist
+
+1. Deploy the static wallet to Cloudflare Pages.
+2. Deploy [`workers/turnstile-broadcast-proxy.js`](workers/turnstile-broadcast-proxy.js) as a Cloudflare Worker.
+3. Configure the Worker's `TURNSTILE_SECRET`.
+4. Set `ALLOWED_ORIGIN` to the Pages domain if needed.
+5. Set `coinjs.broadcastProxy` to the deployed Worker `/broadcast` URL.
+6. Rotate any previously used Turnstile secret before production use.
+
