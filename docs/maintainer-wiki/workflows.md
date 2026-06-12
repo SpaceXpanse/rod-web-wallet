@@ -6,6 +6,16 @@
 2. For service-worker/PWA behavior, use HTTPS or localhost because registration is gated in [`index.html`](../../index.html).
 3. Ensure the public ROD API endpoint in [`js/coin.js`](../../js/coin.js) is reachable if testing balance, UTXO lookup, or broadcast flows.
 
+## Verify Wallet Send Fee Behavior
+
+1. Open the wallet locally and unlock a funded wallet through the flow rooted in [`index.html`](../../index.html) and coordinated by [`js/coinbin.js`](../../js/coinbin.js).
+2. Use a wallet with more than one spendable UTXO when validating the review modal, because the review-fee floor now depends on the live `listUnspent` result in [`js/coinbin.js`](../../js/coinbin.js).
+3. Test at least one send with mixed recipient address types where possible, because output sizing now depends on each recipient address plus the change output in [`getWalletEstimatedTotalOutputBytes()`](../../js/coinbin.js:397).
+4. For SegWit verification, test both native bech32 and P2SH-SegWit wallet modes because [`getWalletEstimatedInputBytes()`](../../js/coinbin.js:414) now uses different byte estimates for each path.
+5. Confirm the review modal shows an adjusted fee when the current value is below the relay floor enforced by [`ensureWalletFeeMeetsRelayFloor()`](../../js/coinbin.js:437).
+6. Confirm the loader remains visible during async review UTXO lookup and final broadcast in [`#walletSendBtn`](../../js/coinbin.js:509) and [`#walletConfirmSend`](../../js/coinbin.js:277).
+7. If the API rejects broadcast, confirm the modal closes cleanly, the send button is re-enabled, and the raw signed transaction is exposed through the failure UI in [`js/coinbin.js`](../../js/coinbin.js).
+
 ## Update Documentation
 
 1. Update durable maintainer facts in the relevant page under [`docs/maintainer-wiki/`](./).
