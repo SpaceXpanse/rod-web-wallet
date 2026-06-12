@@ -280,7 +280,7 @@ $(document).ready(function() {
 		var txfee = $("#txFee");
 		var devaddr = coinjs.developer;
 		var devamount = $("#developerDonation");
-		ensureWalletFeeMeetsRelayFloor();
+		ensureWalletFeeMeetsRelayFloor(true);
 
 		if((devamount.val()*1)>0 && devaddr){
 			tx.addoutput(devaddr, devamount.val()*1);
@@ -379,15 +379,20 @@ $(document).ready(function() {
 		return baseBytes + (estimatedInputCount * estimatedInputBytes) + (totalOutputs * estimatedOutputBytes);
 	}
 
-	function ensureWalletFeeMeetsRelayFloor(){
+	var walletFeeWasManuallyEdited = false;
+
+	function ensureWalletFeeMeetsRelayFloor(forceMinimumFee){
 		var minimumSatPerByte = 100;
 		var estimatedBytes = estimateWalletTransactionBytes();
 		var minimumFeeSat = estimatedBytes * minimumSatPerByte;
 		var minimumFeeRod = (minimumFeeSat / 100000000);
-		var currentFeeRod = $("#txFee").val()*1;
+		var txFeeField = $("#txFee");
+		var currentFeeRod = txFeeField.val()*1;
+		var shouldForceMinimumFee = forceMinimumFee === true;
 
-		if(currentFeeRod < minimumFeeRod){
-			$("#txFee").val(minimumFeeRod.toFixed(8));
+		if(!isNaN(currentFeeRod) && currentFeeRod < minimumFeeRod && (shouldForceMinimumFee || !walletFeeWasManuallyEdited)){
+			txFeeField.val(minimumFeeRod.toFixed(8));
+			walletFeeWasManuallyEdited = false;
 			return {
 				updated: true,
 				minimumFeeRod: minimumFeeRod,
@@ -404,11 +409,22 @@ $(document).ready(function() {
 		};
 	}
 
-	$("#txFee, #developerDonation, #walletSpendTo .amount").on('change keyup', function(){
+	$("#txFee").on('input', function(){
+		walletFeeWasManuallyEdited = true;
+	});
+
+	$("#developerDonation, #walletSpendTo").on('change keyup', '.amount', function(){
+		walletFeeWasManuallyEdited = false;
+		ensureWalletFeeMeetsRelayFloor();
+	});
+
+	$("#developerDonation").on('change keyup', function(){
+		walletFeeWasManuallyEdited = false;
 		ensureWalletFeeMeetsRelayFloor();
 	});
 
 	$("#walletShowSpend").on('click', function(){
+		walletFeeWasManuallyEdited = false;
 		ensureWalletFeeMeetsRelayFloor();
 	});
 
@@ -424,10 +440,11 @@ $(document).ready(function() {
 		$("#walletSpendTo .output:first .addressTo").val('');
 		$("#walletSpendTo .output:first .amount").val('');
 		$("#walletSendStatus").addClass("hidden").html("");
-		$("#walletSendConfirmStatus").addClass("hidden").removeClass('alert-success').removeClass('alert-danger').html("");
+		$("#walletSendConfirmStatus").addClass("hidden").removeClass('alert-success').removeClass('alert-danger').removeClass('alert-info').html("");
 		$("#walletSendFailTransaction").addClass('hidden');
 		$("#walletSendBtn").attr('disabled',false);
 		$("#walletConfirmSend").removeClass('hidden').attr('disabled',false);
+		walletFeeWasManuallyEdited = false;
 		ensureWalletFeeMeetsRelayFloor();
 	});
 
@@ -435,7 +452,7 @@ $(document).ready(function() {
 
 		$("#walletSendFailTransaction").addClass('hidden');
 		$("#walletSendStatus").addClass("hidden").html("");
-		var feeFloorResult = ensureWalletFeeMeetsRelayFloor();
+		var feeFloorResult = ensureWalletFeeMeetsRelayFloor(true);
 
 		var thisbtn = $(this);
 		var txfee = $("#txFee");
