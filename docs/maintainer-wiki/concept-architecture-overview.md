@@ -23,9 +23,17 @@
 ## Data Flow Overview
 
 1. A user loads [`index.html`](../../index.html) in a browser.
-2. UI actions invoke logic in [`js/coinbin.js`](../../js/coinbin.js), which uses [`js/coin.js`](../../js/coin.js) to derive keys, build transactions, and sign locally.
+2. Early page boot in [`index.html`](../../index.html) flips a hidden field from a default value to a JavaScript-confirmed value, providing a lightweight client-side guard intended to stop simple non-JavaScript form and button automation.
+3. UI actions invoke logic in [`js/coinbin.js`](../../js/coinbin.js), which uses [`js/coin.js`](../../js/coin.js) to derive keys, build transactions, and sign locally.
 3. Read-only blockchain operations such as balance, unspent output lookup, transaction lookup, and broadcast are sent to the configured ROD API endpoint in [`js/coin.js`](../../js/coin.js).
 4. Static assets are cached by [`sw.js`](../../sw.js) for repeat loads and offline-friendly behavior.
+
+## Lightweight Bot-Frictions
+
+- [`index.html`](../../index.html) includes a hidden input that defaults to `1` and is changed to `2` by an inline script during page execution.
+- [`js/coinbin.js`](../../js/coinbin.js) checks that value before sensitive UI-triggered actions continue.
+- Current guarded actions are wallet open, WIF import, wallet send confirmation, and raw transaction broadcast in [`js/coinbin.js`](../../js/coinbin.js).
+- This mechanism is implementation-only friction, not a security boundary. It is intended to filter low-effort bots that parse markup but do not execute JavaScript.
 
 ## External Dependencies and Services
 

@@ -1,6 +1,10 @@
 $(document).ready(function() {
 
-	/* open wallet code */
+function captchaPassed(){
+  return $("#captcha").val() === "2";
+}
+
+/* open wallet code */
 
 	var explorer_tx = "https://explorer.rod.spacexpanse.org/tx/"
 	var explorer_addr = "https://explorer.rod.spacexpanse.org/address/"
@@ -122,7 +126,10 @@ $(document).ready(function() {
 	}
 
 	$("#openBtn").click(function(){
-		var email = $("#openEmail").val().toLowerCase();
+  if(!captchaPassed()){
+    return;
+  }
+  var email = $("#openEmail").val().toLowerCase();
 		var walletPassword = $("#openPass").val();
 		var minimumWalletPasswordLength = 16;
 		var hasLowercaseCharacter = /[a-z]/.test(walletPassword);
@@ -173,7 +180,10 @@ $(document).ready(function() {
 	});
 
 	$("#openWifBtn").click(function(){
-		var wif = $.trim($("#openWifKey").val());
+  if(!captchaPassed()){
+    return;
+  }
+  var wif = $.trim($("#openWifKey").val());
 		$("#openWifStatus").html("").addClass("hidden");
 
 		try {
@@ -275,9 +285,12 @@ $(document).ready(function() {
 	});
 
 	$("#walletConfirmSend").click(function(){
-		var thisbtn = $(this);
-		var tx = coinjs.transaction();
-		var txfee = $("#txFee");
+  if(!captchaPassed()){
+    return;
+  }
+  var thisbtn = $(this);
+  var tx = coinjs.transaction();
+  var txfee = $("#txFee");
 		var devaddr = coinjs.developer;
 		var devamount = $("#developerDonation");
 
@@ -1516,8 +1529,11 @@ $(document).ready(function() {
 	});
 
 	// broadcast transaction via coinbin (default)
-	function rawSubmitDefault(btn){ 
-		var thisbtn = btn;		
+function rawSubmitDefault(btn){
+  if(!captchaPassed()){
+    return;
+  }
+  var thisbtn = btn;		
 		$(thisbtn).val('Please wait, loading...').attr('disabled',true);
 		var tx = coinjs.transaction();
 		tx.broadcast(function(data) {

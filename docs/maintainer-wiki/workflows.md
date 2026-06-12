@@ -6,6 +6,13 @@
 2. For service-worker/PWA behavior, use HTTPS or localhost because registration is gated in [`index.html`](../../index.html).
 3. Ensure the public ROD API endpoint in [`js/coin.js`](../../js/coin.js) is reachable if testing balance, UTXO lookup, or broadcast flows.
 
+## Verify Lightweight Bot-Friction Behavior
+
+1. Load [`index.html`](../../index.html) in a normal browser session and confirm the hidden `captcha` field is changed by JavaScript before interaction.
+2. Verify normal behavior still works for [`#openBtn`](../../js/coinbin.js:128), [`#openWifBtn`](../../js/coinbin.js:182), [`#walletConfirmSend`](../../js/coinbin.js:287), and [`rawSubmitDefault()`](../../js/coinbin.js:1532).
+3. Simulate a non-JavaScript or non-executing automation path by forcing the hidden field away from the expected value in devtools, then confirm those guarded actions return early.
+4. Treat this as low-cost bot friction only; do not document it as cryptographic protection, authentication, or server-side validation.
+
 ## Verify Wallet Send Fee Behavior
 
 1. Open the wallet locally and unlock a funded wallet through the flow rooted in [`index.html`](../../index.html) and coordinated by [`js/coinbin.js`](../../js/coinbin.js).
