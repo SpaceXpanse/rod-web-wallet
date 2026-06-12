@@ -280,6 +280,7 @@ $(document).ready(function() {
 		var txfee = $("#txFee");
 		var devaddr = coinjs.developer;
 		var devamount = $("#developerDonation");
+		ensureWalletFeeMeetsRelayFloor();
 
 		if((devamount.val()*1)>0 && devaddr){
 			tx.addoutput(devaddr, devamount.val()*1);
@@ -434,6 +435,7 @@ $(document).ready(function() {
 
 		$("#walletSendFailTransaction").addClass('hidden');
 		$("#walletSendStatus").addClass("hidden").html("");
+		var feeFloorResult = ensureWalletFeeMeetsRelayFloor();
 
 		var thisbtn = $(this);
 		var txfee = $("#txFee");
@@ -477,7 +479,11 @@ $(document).ready(function() {
 		if($("#walletSpend .has-error").length==0){
 			var balance = ($("#walletBalance").html()).replace(/[^0-9\.]+/g,'')*1;
 			if(total<=balance){
-				$("#walletSendConfirmStatus").addClass("hidden").removeClass('alert-success').removeClass('alert-danger').html("");
+				if(feeFloorResult.updated){
+					$("#walletSendConfirmStatus").removeClass("hidden alert-danger alert-success").addClass('alert-info').html('Network fee adjusted to the relay minimum of '+feeFloorResult.minimumFeeRod.toFixed(8)+' ROD for an estimated '+feeFloorResult.estimatedBytes+' byte transaction.');
+				} else {
+					$("#walletSendConfirmStatus").addClass("hidden").removeClass('alert-success alert-danger alert-info').html("");
+				}
 				$("#spendAmount").html(total);
 				$("#modalWalletConfirm").modal("show");
 				$("#walletConfirmSend").removeClass('hidden').attr('disabled',false);

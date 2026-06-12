@@ -693,6 +693,18 @@ body {
 	color: #defbed;
 }
 
+#modalWalletConfirm .alert-danger {
+	background: #f2dede;
+	border-color: #ebccd1;
+	color: #a94442;
+}
+
+#modalWalletConfirm .alert-info {
+	background: #d9edf7;
+	border-color: #bce8f1;
+	color: #31708f;
+}
+
 #footer {
 	height: 60px;
 	background-color: rgba(3, 8, 18, 0.9);

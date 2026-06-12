@@ -9,6 +9,12 @@ The format is inspired by Keep a Changelog and follows Semantic Versioning princ
 ### Added
 - Wallet tab WIF import support now lets users paste a ROD WIF private key, decode it locally, open the wallet dashboard, and use the existing balance/send/sign workflow through [`index.html`](index.html:196) and [`js/coinbin.js`](js/coinbin.js:35).
 
+### Changed
+- Wallet send review/confirm flow now reapplies [`ensureWalletFeeMeetsRelayFloor()`](js/coinbin.js:381) before modal review and final send, prefilling the relay-minimum fee earlier and surfacing the adjustment in the confirmation modal.
+
+### Fixed
+- Wallet send confirmation modal alert colors now use readable light-surface variants for fee-floor and broadcast failure messages in [`css/style.css`](css/style.css:690).
+
 ## [2.0.2-beta] - 2026-05-28
 
 ### Added
