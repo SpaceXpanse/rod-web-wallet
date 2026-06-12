@@ -235,6 +235,27 @@
 												<button id="openBtn" class="btn btn-primary btn-lg" type="submit">Open Wallet</button>
 												<a href="#newAddress" data-toggle="tab" class="wallet-secondary-link">Need an offline address? Create one instead.</a>
 											</form>
+
+											<form class="form-signin wallet-access-card" role="form" action="javascript:;">
+												<h3><span class="glyphicon glyphicon-import"></span> Import WIF key</h3>
+												<p class="text-muted">Paste an existing ROD WIF private key to open its decoded address. The key is decoded locally in your browser and is not uploaded.</p>
+
+												<div class="alert alert-warning"><b>Sensitive key warning:</b> Anyone with this WIF/private key can spend the funds. Paste it only on a trusted, private device.</div>
+
+												<div class="form-group">
+													<label for="openWifKey">WIF private key</label>
+													<div class="input-group">
+														<input id="openWifKey" type="password" class="form-control" placeholder="Paste ROD WIF private key">
+														<span class="input-group-btn">
+															<button class="showKey btn btn-default" type="button">Show</button>
+														</span>
+													</div>
+													<p class="help-block">For best safety, use a downloaded/offline copy when importing private keys.</p>
+												</div>
+
+												<div id="openWifStatus" class="alert alert-danger hidden"></div>
+												<button id="openWifBtn" class="btn btn-primary btn-lg" type="submit">Import WIF Wallet</button>
+											</form>
 										</div>
 										<div class="col-md-5">
 											<div class="wallet-security-card">
@@ -242,6 +263,7 @@
 												<p>This wallet cannot recover forgotten passphrases.</p>
 												<ul>
 													<li><b>Enter email + passphrase</b><span>These inputs deterministically derive the same wallet.</span></li>
+													<li><b>Or import a WIF key</b><span>Pasted private keys stay local but must be protected carefully.</span></li>
 													<li><b>Keys stay in your browser</b><span>The app does not store or upload your passphrase.</span></li>
 													<li><b>Back up after opening</b><span>Save your private key before receiving significant funds.</span></li>
 												</ul>

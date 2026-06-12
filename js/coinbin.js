@@ -7,6 +7,7 @@ $(document).ready(function() {
 	var explorer_block = "https://explorer.rod.spacexpanse.org/blocks/"
 
 	var wallet_timer = false;
+	var openWalletData = false;
 
 	function updateApiServerStatus(status){
 		var statusBox = $("#apiServerStatus");
@@ -30,6 +31,94 @@ $(document).ready(function() {
 
 	if(coinjs.apiHealthCheck){
 		coinjs.apiHealthCheck();
+	}
+
+	function getWalletAddressType(){
+		if($("#walletSegwit").is(":checked")){
+			return $("#walletSegwitBech32").is(":checked") ? 'bech32' : 'segwit';
+		}
+
+		return 'legacy';
+	}
+
+	function setWalletAddressControls(addressType){
+		$("#walletSegwit")[0].checked = addressType != 'legacy';
+		$("#walletSegwitp2sh")[0].checked = addressType == 'segwit';
+		$("#walletSegwitBech32")[0].checked = addressType == 'bech32';
+		syncWalletSegwitState();
+	}
+
+	function getWalletAddressData(pubkey, addressType){
+		var address = coinjs.pubkey2address(pubkey);
+		var label = 'Legacy';
+		var redeemscript = false;
+
+		if(addressType == 'bech32'){
+			var bech32 = coinjs.bech32Address(pubkey);
+			address = bech32.address;
+			label = 'SegWit/Bech32';
+			redeemscript = bech32.redeemscript;
+		} else if(addressType == 'segwit'){
+			var segwit = coinjs.segwitAddress(pubkey);
+			address = segwit.address;
+			label = 'SegWit';
+			redeemscript = segwit.redeemscript;
+		}
+
+		return {
+			'address': address,
+			'label': label,
+			'redeemscript': redeemscript
+		};
+	}
+
+	function renderOpenWallet(addressType){
+		if(!openWalletData){
+			return;
+		}
+
+		var addressData = getWalletAddressData(openWalletData.pubkey, addressType);
+		openWalletData.addressType = addressType;
+		setWalletAddressControls(addressType);
+
+		$("#walletKeys .walletSegWitRS").addClass("hidden");
+		$("#walletKeys .walletSegWitRS input:text").val('');
+		if(addressData.redeemscript){
+			$("#walletKeys .walletSegWitRS").removeClass("hidden");
+			$("#walletKeys .walletSegWitRS input:text").val(addressData.redeemscript);
+		}
+
+		$("#walletToBtn").html(addressData.label+' <span class="caret"></span>');
+		$("#walletAddress").html(addressData.address);
+		$("#walletHistory").attr('href',explorer_addr+addressData.address);
+
+		$("#walletQrCode").html("");
+		var qrcode = new QRCode("walletQrCode");
+		qrcode.makeCode("rod:"+addressData.address);
+
+		$("#walletKeys .privkey").val(openWalletData.wif);
+		$("#walletKeys .pubkey").val(openWalletData.pubkey);
+		$("#walletKeys .privkeyaes").val(openWalletData.privkeyaes);
+
+		$("#openLogin").hide();
+		$("#openWallet").removeClass("hidden").show();
+
+		walletBalance();
+	}
+
+	function openWallet(keys, privkeyaes, addressType){
+		openWalletData = {
+			'wif': keys.wif,
+			'pubkey': keys.pubkey,
+			'privkeyaes': privkeyaes || '',
+			'addressType': addressType
+		};
+
+		renderOpenWallet(addressType);
+	}
+
+	function showWalletLoginError(selector, message){
+		$(selector).html('<span class="glyphicon glyphicon-exclamation-sign"></span> '+message).removeClass("hidden").fadeOut().fadeIn();
 	}
 
 	$("#openBtn").click(function(){
@@ -69,62 +158,49 @@ $(document).ready(function() {
 
 					coinjs.compressed = true;
 					var keys = coinjs.newKeys(s);
-					var address = keys.address;
-					var wif = keys.wif;
-					var pubkey = keys.pubkey;
 					var privkeyaes = CryptoJS.AES.encrypt(keys.wif, pass);
-
-					$("#walletKeys .walletSegWitRS").addClass("hidden");
-					if($("#walletSegwit").is(":checked")){
-						if($("#walletSegwitBech32").is(":checked")){
-							var sw = coinjs.bech32Address(pubkey);
-							address = sw.address;
-							$("#walletToBtn").html('SegWit/Bech32 <span class="caret"></span>');
-						} else {
-
-							var sw = coinjs.segwitAddress(pubkey);
-							address = sw.address;
-							$("#walletToBtn").html('SegWit <span class="caret"></span>');
-						}
-
-						$("#walletKeys .walletSegWitRS").removeClass("hidden");
-						$("#walletKeys .walletSegWitRS input:text").val(sw.redeemscript);
-					} else {
-						$("#walletToBtn").html('Legacy <span class="caret"></span>');
-					}
-
-					$("#walletAddress").html(address);
-					$("#walletHistory").attr('href',explorer_addr+address);
-
-					$("#walletQrCode").html("");
-					var qrcode = new QRCode("walletQrCode");
-					qrcode.makeCode("rod:"+address);
-
-					$("#walletKeys .privkey").val(wif);
-					$("#walletKeys .pubkey").val(pubkey);
-					$("#walletKeys .privkeyaes").val(privkeyaes);
-
-					$("#openLogin").hide();
-					$("#openWallet").removeClass("hidden").show();
-
-					walletBalance();
+					$("#openLoginStatus").html("").addClass("hidden");
+					openWallet(keys, privkeyaes, getWalletAddressType());
 				} else {
-					$("#openLoginStatus").html("Your passwords do not match!").removeClass("hidden").fadeOut().fadeIn();
+					showWalletLoginError("#openLoginStatus", "Your passwords do not match!");
 				}
 			} else {
-				$("#openLoginStatus").html("Password must be at least 16 characters and include uppercase, lowercase, number, symbol, and no spaces.").removeClass("hidden").fadeOut().fadeIn();
+				showWalletLoginError("#openLoginStatus", "Password must be at least 16 characters and include uppercase, lowercase, number, symbol, and no spaces.");
 			}
 		} else {
-			$("#openLoginStatus").html("Your email address doesn't appear to be valid").removeClass("hidden").fadeOut().fadeIn();
+			showWalletLoginError("#openLoginStatus", "Your email address doesn't appear to be valid");
 		}
+	});
 
-		$("#openLoginStatus").prepend('<span class="glyphicon glyphicon-exclamation-sign"></span> ');
+	$("#openWifBtn").click(function(){
+		var wif = $.trim($("#openWifKey").val());
+		$("#openWifStatus").html("").addClass("hidden");
+
+		try {
+			var wifAddress = coinjs.wif2address(wif);
+			var wifPubkey = coinjs.wif2pubkey(wif);
+			var decodedAddress = coinjs.addressDecode(wifAddress.address);
+			if(!decodedAddress || decodedAddress.version != coinjs.pub){
+				showWalletLoginError("#openWifStatus", "Unable to decode a valid ROD address from this WIF private key.");
+				return;
+			}
+
+			openWallet({
+				'wif': wif,
+				'pubkey': wifPubkey.pubkey,
+				'address': wifAddress.address
+			}, '', getWalletAddressType());
+		} catch(e) {
+			showWalletLoginError("#openWifStatus", "Enter a valid ROD WIF private key for the selected network.");
+		}
 	});
 
 	$("#walletLogout").click(function(){
 		$("#openEmail").val("");
 		$("#openPass").val("");
 		$("#openPassConfirm").val("");
+		$("#openWifKey").val("");
+		openWalletData = false;
 
 		$("#openLogin").show();
 		$("#openWallet").addClass("hidden").show();
@@ -138,8 +214,10 @@ $(document).ready(function() {
 
 		$("#walletKeys .privkey").val("");
 		$("#walletKeys .pubkey").val("");
+		$("#walletKeys .privkeyaes").val("");
 
 		$("#openLoginStatus").html("").hide();
+		$("#openWifStatus").html("").hide();
 	});
 
 	function syncWalletSegwitState(){
@@ -167,23 +245,15 @@ $(document).ready(function() {
 	syncWalletSegwitState();
 
 	$("#walletToSegWit").click(function(){
-		$("#walletToBtn").html('SegWit <span class="caret"></span>');
-		$("#walletSegwit")[0].checked = true;
-		$("#walletSegwitp2sh")[0].checked = true;
-		$("#openBtn").click();
+		renderOpenWallet('segwit');
 	});
 
 	$("#walletToSegWitBech32").click(function(){
-		$("#walletToBtn").html('Bech32 <span class="caret"></span>');
-		$("#walletSegwit")[0].checked = true;
-		$("#walletSegwitBech32")[0].checked = true;		
-		$("#openBtn").click();
+		renderOpenWallet('bech32');
 	});
 
 	$("#walletToLegacy").click(function(){
-		$("#walletToBtn").html('Legacy <span class="caret"></span>');
-		$("#walletSegwit")[0].checked = false;
-		$("#openBtn").click();
+		renderOpenWallet('legacy');
 	});
 
 	$("#walletShowKeys").click(function(){
