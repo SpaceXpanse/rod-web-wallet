@@ -112,6 +112,15 @@ export default {
 };
 
 async function serveStaticAsset(request, env) {
+	if (!env.ASSETS || typeof env.ASSETS.fetch !== "function") {
+		return new Response("Cloudflare static assets binding \"ASSETS\" is unavailable. Deploy this Worker with [`wrangler.jsonc`](wrangler.jsonc) so the assets binding is attached.", {
+			status: 500,
+			headers: {
+				"Content-Type": "text/plain; charset=utf-8"
+			}
+		});
+	}
+
 	const assetResponse = await env.ASSETS.fetch(request);
 	if (assetResponse.status !== 404 || !shouldServeSpaShell(request)) {
 		return assetResponse;
