@@ -8,9 +8,9 @@
 
 ## Verify Lightweight Bot-Friction Behavior
 
-1. Load [`index.html`](../../index.html) in a normal browser session and confirm the hidden `captcha` field is changed by JavaScript before interaction.
+1. Load [`index.html`](../../index.html) in a normal browser session and confirm the hidden `captcha` field is changed from its default value by JavaScript before interaction.
 2. Verify normal behavior still works for [`#openBtn`](../../js/coinbin.js:128), [`#openWifBtn`](../../js/coinbin.js:182), [`#walletConfirmSend`](../../js/coinbin.js:287), and [`rawSubmitDefault()`](../../js/coinbin.js:1532).
-3. Simulate a non-JavaScript or non-executing automation path by forcing the hidden field away from the expected value in devtools, then confirm those guarded actions return early.
+3. Simulate a non-JavaScript or non-executing automation path by reverting the hidden field to its default value in devtools, then confirm those guarded actions return early.
 4. Treat this as low-cost bot friction only; do not document it as cryptographic protection, authentication, or server-side validation.
 
 ## Verify Wallet Send Fee Behavior

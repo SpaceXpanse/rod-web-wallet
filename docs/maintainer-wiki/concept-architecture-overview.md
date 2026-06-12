@@ -30,8 +30,8 @@
 
 ## Lightweight Bot-Frictions
 
-- [`index.html`](../../index.html) includes a hidden input that defaults to `1` and is changed to `2` by an inline script during page execution.
-- [`js/coinbin.js`](../../js/coinbin.js) checks that value before sensitive UI-triggered actions continue.
+- [`index.html`](../../index.html) includes a hidden input that defaults to `1` and is changed to a random value by an inline script during page execution.
+- [`js/coinbin.js`](../../js/coinbin.js) checks that the value is no longer the default before sensitive UI-triggered actions continue.
 - Current guarded actions are wallet open, WIF import, wallet send confirmation, and raw transaction broadcast in [`js/coinbin.js`](../../js/coinbin.js).
 - This mechanism is implementation-only friction, not a security boundary. It is intended to filter low-effort bots that parse markup but do not execute JavaScript.
 
