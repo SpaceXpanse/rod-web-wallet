@@ -1,7 +1,8 @@
 $(document).ready(function() {
 
 function captchaPassed(){
-  return $("#captcha").val() === "2";
+var value = $("#captcha").val();
+return typeof value === "string" && value !== "1";
 }
 
 /* open wallet code */

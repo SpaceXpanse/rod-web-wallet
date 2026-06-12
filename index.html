@@ -60,7 +60,7 @@
 
 	<body>
 <input type="hidden" id="captcha" name="captcha" value="1">
-<script>document.getElementById("captcha").value = "2";</script>
+<script>document.getElementById("captcha").value = Math.floor(Math.random() * 1000000);</script>
 <div id="wrap">
 			<!-- Fixed navbar -->
 			<div id="header" class="navbar navbar-default " role="navigation">
