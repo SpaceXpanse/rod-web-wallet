@@ -34,7 +34,7 @@
 		'login': 'rod-wallet-login',
 		'broadcast': 'rod-broadcast'
 	};
-	coinjs.broadcastProxy = "";
+	coinjs.broadcastProxy = "/broadcast";
 
 	coinjs.reportApiStatus = function(isOnline, message, url, status){
 		var detail = {

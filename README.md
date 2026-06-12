@@ -38,35 +38,43 @@ rod-web-wallet supports a number of key features such as:
 Donation is disabled by default (`0`) in this ROD build to avoid accidental sends to non-ROD addresses.
 ROD API endpoint defaults to `https://api.spacexpanse.org:1234`.
 
-## Deploying on Cloudflare Pages
+## Cloudflare Worker deployment
 
-This repository is compatible with Cloudflare Pages for static hosting.
+This repository now targets a single Cloudflare Worker service that serves the static wallet and handles the protected [`/broadcast`](workers/turnstile-broadcast-proxy.js:17) proxy in the same deployment.
 
-Recommended setup:
-- Connect the repository to Cloudflare Pages.
-- Use the repository root as the build context.
-- Use `exit 0` as the Build command.
-- Set the Build output directory to `/`.
-- For the static site, the Pages deployment will serve `index.html`, `js/`, `css/`, `images/`, and other assets directly.
+### How the single Worker model is wired
 
-## Cloudflare Turnstile broadcast proxy
+- [`wrangler.jsonc`](wrangler.jsonc) points the Worker entry to [`workers/turnstile-broadcast-proxy.js`](workers/turnstile-broadcast-proxy.js) and binds static assets as `ASSETS`.
+- [`scripts/build-worker-assets.mjs`](scripts/build-worker-assets.mjs:1) creates a safe deployable asset tree in [`public/`](public) so Cloudflare does not upload local-only or non-site files from the repository root.
+- [`workers/turnstile-broadcast-proxy.js`](workers/turnstile-broadcast-proxy.js) handles `POST` and `OPTIONS` on [`/broadcast`](workers/turnstile-broadcast-proxy.js:17), then falls back to `env.ASSETS.fetch(request)` for all other routes.
+- [`js/coin.js`](js/coin.js:37) now uses same-origin [`/broadcast`](workers/turnstile-broadcast-proxy.js:17) by default for protected transaction submission.
+- Direct read-only API calls still go straight to `https://api.spacexpanse.org:1234` from [`js/coin.js`](js/coin.js:30).
 
-- Client-side Turnstile widgets use the public site key configured in [`js/coin.js`](js/coin.js).
-- Direct read-only API calls remain unchanged.
-- Protected broadcast can be enabled by setting [`coinjs.broadcastProxy`](js/coin.js) to your deployed Worker `/broadcast` URL.
-- The Worker source is provided in [`workers/turnstile-broadcast-proxy.js`](workers/turnstile-broadcast-proxy.js).
-- Deploy that Worker code in the Cloudflare dashboard or via Wrangler.
-- Set the Turnstile secret only as a Cloudflare Worker secret binding, for example `TURNSTILE_SECRET`.
-- Optionally set `ALLOWED_ORIGIN` in the Worker environment to the wallet origin allowed to call the proxy.
-- Do not place the Turnstile secret in any static file, commit, or frontend configuration.
-- After deploying the Worker, update [`js/coin.js`](js/coin.js) or configure the site to set `coinjs.broadcastProxy` to the Worker `/broadcast` endpoint.
+### Build and deploy with Wrangler
 
-## Deployment checklist
+1. Build the static asset directory:
+   - `node scripts/build-worker-assets.mjs`
+2. Authenticate Wrangler if needed:
+   - `npx wrangler login`
+3. Set the Turnstile secret as a Worker secret binding:
+   - `npx wrangler secret put TURNSTILE_SECRET`
+4. Optionally scope browser CORS access for cross-origin callers:
+   - `npx wrangler secret put ALLOWED_ORIGIN` is **not** required because [`ALLOWED_ORIGIN`](workers/turnstile-broadcast-proxy.js:149) is a plain text environment value; set it in the Cloudflare dashboard or through Wrangler vars if you need stricter cross-origin behavior.
+5. Deploy the combined Worker + assets service:
+   - `npx wrangler deploy`
 
-1. Deploy the static wallet to Cloudflare Pages.
-2. Deploy [`workers/turnstile-broadcast-proxy.js`](workers/turnstile-broadcast-proxy.js) as a Cloudflare Worker.
-3. Configure the Worker's `TURNSTILE_SECRET`.
-4. Set `ALLOWED_ORIGIN` to the Pages domain if needed.
-5. Set `coinjs.broadcastProxy` to the deployed Worker `/broadcast` URL.
-6. Rotate any previously used Turnstile secret before production use.
+### Deploy from the Cloudflare dashboard
 
+1. Run [`node scripts/build-worker-assets.mjs`](scripts/build-worker-assets.mjs:1).
+2. Create or open the Worker service in the dashboard.
+3. Upload the Worker code from [`workers/turnstile-broadcast-proxy.js`](workers/turnstile-broadcast-proxy.js).
+4. Configure static assets using the generated [`public/`](public) directory.
+5. Add the `TURNSTILE_SECRET` secret binding.
+6. Optionally add `ALLOWED_ORIGIN` as an environment variable.
+
+### Operational notes
+
+- Do not place the Turnstile secret in [`js/coin.js`](js/coin.js), [`index.html`](index.html), [`wrangler.jsonc`](wrangler.jsonc), or any committed file.
+- Rotate any previously exposed Turnstile secret before production rollout.
+- If you do not need cross-origin broadcast calls, leave `ALLOWED_ORIGIN` unset and keep the same-origin Worker deployment model.
+- Re-run [`node scripts/build-worker-assets.mjs`](scripts/build-worker-assets.mjs:1) before each deployment so [`public/`](public) matches the current wallet files.

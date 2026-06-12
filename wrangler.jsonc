@@ -1,0 +1,11 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "rod-web-wallet",
+	"main": "workers/turnstile-broadcast-proxy.js",
+	"compatibility_date": "2026-06-12",
+	"assets": {
+		"directory": "./public",
+		"binding": "ASSETS",
+		"run_worker_first": ["/*"]
+	}
+}

@@ -1,9 +1,16 @@
 const TURNSTILE_SITEVERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 const ROD_BROADCAST_URL = "https://api.spacexpanse.org:1234/broadcast";
 const REQUIRED_ACTION = "rod-broadcast";
+const INDEX_PATHNAME = "/index.html";
 
 export default {
 	async fetch(request, env) {
+		const requestUrl = new URL(request.url);
+
+		if (requestUrl.pathname !== "/broadcast") {
+			return serveStaticAsset(request, env);
+		}
+
 		const corsHeaders = buildCorsHeaders(request, env);
 
 		if (request.method === "OPTIONS") {
@@ -11,14 +18,6 @@ export default {
 				status: 204,
 				headers: corsHeaders
 			});
-		}
-
-		const requestUrl = new URL(request.url);
-		if (requestUrl.pathname !== "/broadcast") {
-			return jsonResponse({
-				success: false,
-				response: "Not found"
-			}, 404, corsHeaders);
 		}
 
 		if (request.method !== "POST") {
@@ -85,13 +84,21 @@ export default {
 			}, 403, corsHeaders);
 		}
 
-		const broadcastResponse = await fetch(ROD_BROADCAST_URL, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/x-www-form-urlencoded"
-			},
-			body: `raw=${encodeURIComponent(rawTransaction)}`
-		});
+		let broadcastResponse;
+		try {
+			broadcastResponse = await fetch(ROD_BROADCAST_URL, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/x-www-form-urlencoded"
+				},
+				body: `raw=${encodeURIComponent(rawTransaction)}`
+			});
+		} catch (error) {
+			return jsonResponse({
+				success: false,
+				response: "ROD broadcast upstream is unreachable"
+			}, 502, corsHeaders);
+		}
 
 		const broadcastText = await broadcastResponse.text();
 		return new Response(broadcastText, {
@@ -103,6 +110,42 @@ export default {
 		});
 	}
 };
+
+async function serveStaticAsset(request, env) {
+	const assetResponse = await env.ASSETS.fetch(request);
+	if (assetResponse.status !== 404 || !shouldServeSpaShell(request)) {
+		return assetResponse;
+	}
+
+	const spaUrl = new URL(request.url);
+	spaUrl.pathname = INDEX_PATHNAME;
+	spaUrl.search = "";
+
+	const spaRequest = new Request(spaUrl.toString(), {
+		method: "GET",
+		headers: request.headers
+	});
+
+	return env.ASSETS.fetch(spaRequest);
+}
+
+function shouldServeSpaShell(request) {
+	if (request.method !== "GET" && request.method !== "HEAD") {
+		return false;
+	}
+
+	const requestUrl = new URL(request.url);
+	if (requestUrl.pathname === "/broadcast") {
+		return false;
+	}
+
+	return !pathLooksLikeStaticFile(requestUrl.pathname);
+}
+
+function pathLooksLikeStaticFile(pathname) {
+	const lastSegment = pathname.split("/").pop() || "";
+	return lastSegment.includes(".");
+}
 
 async function validateTurnstileToken(token, request, env) {
 	const formData = new FormData();

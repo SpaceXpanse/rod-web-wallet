@@ -5,7 +5,8 @@
 1. Serve the repository as static files or open a local hosted copy with [`index.html`](../../index.html) as the entry point.
 2. For service-worker/PWA behavior, use HTTPS or localhost because registration is gated in [`index.html`](../../index.html).
 3. Ensure the public ROD API endpoint in [`js/coin.js`](../../js/coin.js) is reachable if testing balance, UTXO lookup, or broadcast flows.
-4. If testing protected broadcast, deploy [`workers/turnstile-broadcast-proxy.js`](../../workers/turnstile-broadcast-proxy.js), set `TURNSTILE_SECRET` as a Worker secret binding, optionally set `ALLOWED_ORIGIN`, and point [`coinjs.broadcastProxy`](../../js/coin.js) at the deployed `/broadcast` URL.
+4. For the current Cloudflare deployment model, run [`node scripts/build-worker-assets.mjs`](../../scripts/build-worker-assets.mjs:1) so [`public/`](../../public) contains the deployable static site subset referenced by [`wrangler.jsonc`](../../wrangler.jsonc).
+5. If testing protected broadcast through the deployed service, set `TURNSTILE_SECRET` as a Worker secret binding, optionally set `ALLOWED_ORIGIN`, and deploy the single Worker defined in [`wrangler.jsonc`](../../wrangler.jsonc), which serves both wallet assets and the same-origin [`/broadcast`](../../workers/turnstile-broadcast-proxy.js:17) endpoint.
 
 ## Verify Turnstile Integration
 
@@ -14,6 +15,14 @@
 3. Confirm raw broadcast and wallet confirm-send flows collect the current Turnstile token before calling broadcast logic in [`js/coinbin.js`](../../js/coinbin.js) and [`r.broadcast()`](../../js/coin.js:1252).
 4. If [`coinjs.broadcastProxy`](../../js/coin.js) is configured, verify the Worker in [`workers/turnstile-broadcast-proxy.js`](../../workers/turnstile-broadcast-proxy.js) rejects missing/invalid tokens, enforces the `rod-broadcast` action, and forwards accepted raw transactions to the public ROD API.
 5. Verify the Turnstile secret is not present in any static file, committed config, or browser-visible payload, and remains only in Worker environment bindings.
+
+## Deploy the Single Worker Service
+
+1. Run [`node scripts/build-worker-assets.mjs`](../../scripts/build-worker-assets.mjs:1) to generate the deployable static asset set in [`public/`](../../public).
+2. Set the Turnstile secret with Wrangler using `npx wrangler secret put TURNSTILE_SECRET` for the Worker configured in [`wrangler.jsonc`](../../wrangler.jsonc).
+3. Optionally configure `ALLOWED_ORIGIN` for stricter cross-origin control if the wallet will not be served from the same Worker origin.
+4. Deploy with `npx wrangler deploy`, which publishes [`workers/turnstile-broadcast-proxy.js`](../../workers/turnstile-broadcast-proxy.js) and binds static assets from [`public/`](../../public).
+5. After deployment, verify the root path serves [`index.html`](../../index.html), non-file SPA routes fall back to the same page, and [`/broadcast`](../../workers/turnstile-broadcast-proxy.js:17) remains protected by Turnstile validation.
 
 ## Verify Wallet Send Fee Behavior
 
@@ -41,5 +50,5 @@
 ## Validation Status
 
 - No `npm`, `package.json`, or `docs:check` script exists in the current workspace snapshot, so there is no built-in documentation validation command to run yet.
-- Turnstile/Worker sanity can still be checked with `node --check` against [`js/coin.js`](../../js/coin.js), [`js/coinbin.js`](../../js/coinbin.js), and [`workers/turnstile-broadcast-proxy.js`](../../workers/turnstile-broadcast-proxy.js), but that is a code syntax check rather than a dedicated documentation validator.
+- Turnstile/Worker sanity can still be checked with `node --check` against [`js/coin.js`](../../js/coin.js), [`js/coinbin.js`](../../js/coinbin.js), and [`workers/turnstile-broadcast-proxy.js`](../../workers/turnstile-broadcast-proxy.js), plus [`node scripts/build-worker-assets.mjs`](../../scripts/build-worker-assets.mjs:1) and `npx wrangler --version`, but that is operational/syntax checking rather than a dedicated documentation validator.
 - If tooling is added later, document the exact validation command here and run it before documentation-heavy commits.

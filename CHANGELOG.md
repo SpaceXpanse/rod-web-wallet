@@ -9,11 +9,13 @@ The format is inspired by Keep a Changelog and follows Semantic Versioning princ
 ### Added
 - Wallet tab WIF import support now lets users paste a ROD WIF private key, decode it locally, open the wallet dashboard, and use the existing balance/send/sign workflow through [`index.html`](index.html:196) and [`js/coinbin.js`](js/coinbin.js:35).
 - Cloudflare Turnstile integration now provides explicit wallet-open and broadcast widget slots plus a deployable Worker proxy in [`workers/turnstile-broadcast-proxy.js`](workers/turnstile-broadcast-proxy.js:1) for protected broadcast flows.
+- Single-service Cloudflare Worker deployment assets can now be built through [`scripts/build-worker-assets.mjs`](scripts/build-worker-assets.mjs:1) and deployed with [`wrangler.jsonc`](wrangler.jsonc).
 
 ### Changed
 - Wallet send review/confirm flow now reapplies [`ensureWalletFeeMeetsRelayFloor()`](js/coinbin.js:381) before modal review and final send, prefilling the relay-minimum fee earlier and surfacing the adjustment in the confirmation modal.
 - Broadcast flow can now optionally send Turnstile token/action metadata through [`r.broadcast()`](js/coin.js:1252) to a configured proxy while preserving direct read-only API calls in [`js/coin.js`](js/coin.js).
 - Wallet-open actions for [`#openBtn`](index.html:230) and [`#openWifBtn`](index.html:255) are now gated by client-side Turnstile state managed in [`js/coinbin.js`](js/coinbin.js).
+- Cloudflare deployment guidance now uses a single Worker that serves static wallet assets and same-origin protected broadcasts through [`workers/turnstile-broadcast-proxy.js`](workers/turnstile-broadcast-proxy.js:1), [`wrangler.jsonc`](wrangler.jsonc), and [`js/coin.js`](js/coin.js:37).
 
 ### Fixed
 - Wallet send confirmation modal alert colors now use readable light-surface variants for fee-floor and broadcast failure messages in [`css/style.css`](css/style.css:690).
