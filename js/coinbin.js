@@ -280,7 +280,6 @@ $(document).ready(function() {
 		var txfee = $("#txFee");
 		var devaddr = coinjs.developer;
 		var devamount = $("#developerDonation");
-		ensureWalletFeeMeetsRelayFloor(true);
 
 		if((devamount.val()*1)>0 && devaddr){
 			tx.addoutput(devaddr, devamount.val()*1);
@@ -314,7 +313,14 @@ $(document).ready(function() {
 			sequence = 0xffffffff-2;
 		}
 
+		$("#walletLoader").removeClass("hidden");
 		tx.addUnspent($("#walletAddress").html(), function(data){
+			if(!data || typeof data.value == 'undefined'){
+				$("#walletSendConfirmStatus").removeClass("hidden alert-success").addClass('alert-danger').html('<span class="glyphicon glyphicon-exclamation-sign"></span> Unable to load spendable wallet inputs.');
+				thisbtn.attr('disabled',false);
+				$("#walletLoader").addClass("hidden");
+				return;
+			}
 
 			var dvalue = (data.value/100000000).toFixed(8) * 1;
 			total = (total*1).toFixed(8) * 1;
@@ -330,6 +336,7 @@ $(document).ready(function() {
 				var signed = txunspent.sign($("#walletKeys .privkey").val());
 
 				tx2.broadcast(function(data){
+					$("#walletLoader").addClass("hidden");
 					if(data && data.success){
 						$("#walletSendConfirmStatus").removeClass('hidden alert-danger').addClass('alert-success').html('Transaction broadcast successfully.<br>txid: <a href="'+explorer_tx+data.txid+'" target="_blank">'+data.txid+'</a>');
 						$("#walletSendFailTransaction").addClass('hidden');
@@ -341,6 +348,8 @@ $(document).ready(function() {
 						$("#walletSendFailTransaction").removeClass('hidden');
 						$("#walletSendFailTransaction textarea").val(signed);
 						thisbtn.attr('disabled',false);
+						$("#modalWalletConfirm").modal('hide');
+						$("#walletSendBtn").attr('disabled',false);
 					}
 
 					walletBalance();
@@ -349,14 +358,13 @@ $(document).ready(function() {
 			} else {
 				$("#walletSendConfirmStatus").removeClass("hidden alert-success").addClass('alert-danger').html("You have a confirmed balance of "+dvalue+" ROD, unable to send "+total+" ROD").fadeOut().fadeIn();
 				thisbtn.attr('disabled',false);
+				$("#walletLoader").addClass("hidden");
 			}
-
-			$("#walletLoader").addClass("hidden");
 
 		}, script, script, sequence);
 	});
 
-	function estimateWalletTransactionBytes(){
+	function getWalletActiveOutputCount(){
 		var outputCount = 0;
 		$.each($("#walletSpendTo .output"), function(i,o){
 			var amountValue = $('.amount',o).val()*1;
@@ -369,21 +377,62 @@ $(document).ready(function() {
 			outputCount++;
 		}
 
-		var hasChangeOutput = true;
-		var changeOutputCount = hasChangeOutput ? 1 : 0;
-		var totalOutputs = outputCount + changeOutputCount;
-		var estimatedInputCount = 1;
-		var estimatedInputBytes = $("#walletSegwit").is(":checked") ? 109 : 148;
-		var estimatedOutputBytes = 34;
+		return outputCount;
+	}
+
+	function getWalletEstimatedOutputBytes(address){
+		var decodedAddress = coinjs.addressDecode(address);
+
+		if(decodedAddress && decodedAddress.type == 'bech32'){
+			return 31;
+		}
+
+		if(decodedAddress && decodedAddress.version == coinjs.multisig){
+			return 32;
+		}
+
+		return 34;
+	}
+
+	function getWalletEstimatedTotalOutputBytes(){
+		var totalOutputBytes = getWalletEstimatedOutputBytes($("#walletAddress").html());
+
+		$.each($("#walletSpendTo .output"), function(i,o){
+			var amountValue = $('.amount',o).val()*1;
+			var recipientAddress = $('.addressTo',o).val();
+			if(amountValue>0 && recipientAddress){
+				totalOutputBytes += getWalletEstimatedOutputBytes(recipientAddress);
+			}
+		});
+
+		if(($("#developerDonation").val()*1)>0 && coinjs.developer){
+			totalOutputBytes += getWalletEstimatedOutputBytes(coinjs.developer);
+		}
+
+		return totalOutputBytes;
+	}
+
+	function getWalletEstimatedInputBytes(){
+		if($("#walletSegwit").is(":checked")){
+			return $("#walletSegwitBech32").is(":checked") ? 41 : 91;
+		}
+
+		return 148;
+	}
+
+	function estimateWalletTransactionBytes(estimatedInputCount){
+		var transactionInputCount = Math.max(1, estimatedInputCount || 1);
+		var estimatedInputBytes = getWalletEstimatedInputBytes();
+		var estimatedOutputBytes = getWalletEstimatedTotalOutputBytes();
 		var baseBytes = 10;
-		return baseBytes + (estimatedInputCount * estimatedInputBytes) + (totalOutputs * estimatedOutputBytes);
+		return baseBytes + (transactionInputCount * estimatedInputBytes) + estimatedOutputBytes;
 	}
 
 	var walletFeeWasManuallyEdited = false;
 
-	function ensureWalletFeeMeetsRelayFloor(forceMinimumFee){
+	function ensureWalletFeeMeetsRelayFloor(forceMinimumFee, estimatedInputCount){
 		var minimumSatPerByte = 100;
-		var estimatedBytes = estimateWalletTransactionBytes();
+		var estimatedBytes = estimateWalletTransactionBytes(estimatedInputCount);
 		var minimumFeeSat = estimatedBytes * minimumSatPerByte;
 		var minimumFeeRod = (minimumFeeSat / 100000000);
 		var txFeeField = $("#txFee");
@@ -452,7 +501,7 @@ $(document).ready(function() {
 
 		$("#walletSendFailTransaction").addClass('hidden');
 		$("#walletSendStatus").addClass("hidden").html("");
-		var feeFloorResult = ensureWalletFeeMeetsRelayFloor(true);
+		walletFeeWasManuallyEdited = false;
 
 		var thisbtn = $(this);
 		var txfee = $("#txFee");
@@ -496,15 +545,40 @@ $(document).ready(function() {
 		if($("#walletSpend .has-error").length==0){
 			var balance = ($("#walletBalance").html()).replace(/[^0-9\.]+/g,'')*1;
 			if(total<=balance){
-				if(feeFloorResult.updated){
-					$("#walletSendConfirmStatus").removeClass("hidden alert-danger alert-success").addClass('alert-info').html('Network fee adjusted to the relay minimum of '+feeFloorResult.minimumFeeRod.toFixed(8)+' ROD for an estimated '+feeFloorResult.estimatedBytes+' byte transaction.');
-				} else {
-					$("#walletSendConfirmStatus").addClass("hidden").removeClass('alert-success alert-danger alert-info').html("");
-				}
-				$("#spendAmount").html(total);
-				$("#modalWalletConfirm").modal("show");
-				$("#walletConfirmSend").removeClass('hidden').attr('disabled',false);
-				$("#walletSendBtn").attr('disabled',false);
+				var reviewTx = coinjs.transaction();
+				$("#walletLoader").removeClass("hidden");
+				reviewTx.listUnspent($("#walletAddress").html(), function(unspentData){
+					$("#walletLoader").addClass("hidden");
+					if(!unspentData || !unspentData.success || !unspentData.data){
+						$("#walletSendStatus").removeClass("hidden").html('<span class="glyphicon glyphicon-exclamation-sign"></span> Unable to estimate wallet fee from current UTXOs.');
+						return;
+					}
+
+					var inputCount = Math.max(1, unspentData.data.length);
+					var feeFloorResult = ensureWalletFeeMeetsRelayFloor(true, inputCount);
+					var updatedTotal = (devamount.val()*1) + (txfee.val()*1);
+
+					$.each($("#walletSpendTo .output"), function(i,o){
+						updatedTotal += $('.amount',o).val()*1;
+					});
+
+					updatedTotal = updatedTotal.toFixed(8);
+					if(updatedTotal>balance){
+						$("#walletSendStatus").removeClass("hidden").html("You are trying to spend "+updatedTotal+' but have a balance of '+balance);
+						return;
+					}
+
+					if(feeFloorResult.updated){
+						$("#walletSendConfirmStatus").removeClass("hidden alert-danger alert-success").addClass('alert-info').html('Network fee adjusted to the relay minimum of '+feeFloorResult.minimumFeeRod.toFixed(8)+' ROD for an estimated '+feeFloorResult.estimatedBytes+' byte transaction using '+inputCount+' input(s).');
+					} else {
+						$("#walletSendConfirmStatus").addClass("hidden").removeClass('alert-success alert-danger alert-info').html("");
+					}
+
+					$("#spendAmount").html(updatedTotal);
+					$("#modalWalletConfirm").modal("show");
+					$("#walletConfirmSend").removeClass('hidden').attr('disabled',false);
+					$("#walletSendBtn").attr('disabled',false);
+				});
 			} else {
 				$("#walletSendStatus").removeClass("hidden").html("You are trying to spend "+total+' but have a balance of '+balance);
 			}
@@ -540,7 +614,10 @@ $(document).ready(function() {
 					const v = data["data"][0]["balance"];
 					$("#walletBalance").html(v+" ROD").attr('rel',v).fadeOut().fadeIn();
 				} else {
-				$("#walletBalance").html("0.00 ROD").attr('rel',0).fadeOut().fadeIn();
+					var previousBalance = $("#walletBalance").attr('rel');
+					var fallbackBalance = (!isNaN(previousBalance*1)) ? (previousBalance*1).toFixed(8) : '0.00000000';
+					$("#walletBalance").html(fallbackBalance+" ROD").attr('rel', previousBalance || 0).fadeOut().fadeIn();
+					$("#walletSendStatus").removeClass("hidden").html('<span class="glyphicon glyphicon-exclamation-sign"></span> Unable to refresh wallet balance: '+(data["error"] || 'ROD API error'));
 				}
 
 				$("#walletLoader").addClass("hidden");
