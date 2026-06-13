@@ -200,7 +200,8 @@
 										<div class="col-md-7">
 											<form class="form-signin wallet-access-card" role="form" action="javascript:;">
 												<h3><span class="glyphicon glyphicon-briefcase"></span> Open wallet</h3>
-												<p class="text-muted">Enter the same email and passphrase every time to derive the same ROD wallet in this browser. A different email or passphrase will generate a different wallet.</p>
+											<p class="text-muted">Enter the same email and passphrase every time to derive the same ROD wallet in this browser. A different email or passphrase will generate a different wallet.</p>
+											<div class="alert alert-warning"><b>Compatibility notice:</b> This wallet keeps the slightly less secure legacy derivation for compatibility, so the same email and passphrase still open the same wallet as before. A stronger derivation cannot be added here without changing the resulting private key and address, which makes using a really strong, unique passphrase much more important. Weak or reused credentials put your funds at risk.</div>
 
 												<div class="form-group">
 													<label for="openEmail">Email address</label>
@@ -233,6 +234,10 @@
 													</div>
 												</div>
 
+												<div class="checkbox">
+													<label><input type="checkbox" id="openWalletRiskAcknowledgement" class="checkbox-inline"> I understand this legacy wallet login is deterministic, local-only, unrecoverable, and only as strong as my email + passphrase.</label>
+												</div>
+
 												<div id="openLoginStatus" class="alert alert-danger hidden"></div>
 												<button id="openBtn" class="btn btn-primary btn-lg" type="submit">Open Wallet</button>
 												<a href="#newAddress" data-toggle="tab" class="wallet-secondary-link">Need an offline address? Create one instead.</a>
@@ -244,7 +249,7 @@
 
 												<div class="alert alert-warning"><b>Sensitive key warning:</b> Anyone with this WIF/private key can spend the funds. Paste it only on a trusted, private device.</div>
 
-												<div class="form-group">
+											<div class="form-group">
 													<label for="openWifKey">WIF private key</label>
 													<div class="input-group">
 														<input id="openWifKey" type="password" class="form-control" placeholder="Paste ROD WIF private key">
@@ -253,6 +258,10 @@
 														</span>
 													</div>
 													<p class="help-block">For best safety, use a downloaded/offline copy when importing private keys.</p>
+												</div>
+
+												<div class="checkbox">
+													<label><input type="checkbox" id="openWifRiskAcknowledgement" class="checkbox-inline"> I understand this legacy wallet login is deterministic, local-only, unrecoverable, and only as strong as my email + passphrase.</label>
 												</div>
 
 												<div id="openWifStatus" class="alert alert-danger hidden"></div>
@@ -438,6 +447,13 @@
 						<div class="checkbox">
 							<label><input type="checkbox" id="newBrainwallet" class="checkbox-inline"> Custom Seed or Brain Wallet</label>
 							<input type="text" class="form-control hidden" id="brainwallet">
+							<div id="brainwalletAckWrap" class="alert alert-warning hidden" style="margin-top:10px; margin-bottom:10px;">
+								<b>Brain-wallet warning</b><br>
+								Custom seeds are deterministic and can be brute-forced offline if they are weak or reused. This option does not add server-side protection or recovery.
+								<div class="checkbox" style="margin-top:10px; margin-bottom:0;">
+									<label><input type="checkbox" id="newBrainwalletAck" class="checkbox-inline"> I understand a weak custom seed can permanently expose funds.</label>
+								</div>
+							</div>
 						</div>
 
 						<div class="checkbox">
@@ -518,6 +534,13 @@
 						<div class="checkbox">
 							<label><input type="checkbox" id="newSegWitBrainwallet" class="checkbox-inline"> Custom Seed or Brain Wallet</label>
 							<input type="text" class="form-control hidden" id="brainwalletSegWit">
+							<div id="brainwalletSegWitAckWrap" class="alert alert-warning hidden" style="margin-top:10px; margin-bottom:10px;">
+								<b>Brain-wallet warning</b><br>
+								Custom seeds are deterministic and can be brute-forced offline if they are weak or reused. This option does not add server-side protection or recovery.
+								<div class="checkbox" style="margin-top:10px; margin-bottom:0;">
+									<label><input type="checkbox" id="newSegWitBrainwalletAck" class="checkbox-inline"> I understand a weak custom seed can permanently expose funds.</label>
+								</div>
+							</div>
 						</div>
 
 						<div class="btn-group">
@@ -716,6 +739,13 @@
 						<div class="checkbox">
 							<label><input type="checkbox" id="newHDBrainwallet" class="checkbox-inline"> Custom Seed or Brain Wallet</label>
 							<input type="text" class="form-control hidden" id="HDBrainwallet">
+							<div id="HDBrainwalletAckWrap" class="alert alert-warning hidden" style="margin-top:10px; margin-bottom:10px;">
+								<b>Brain-wallet warning</b><br>
+								Custom seeds are deterministic and can be brute-forced offline if they are weak or reused. HD master keys generated from weak custom seeds are equally exposed.
+								<div class="checkbox" style="margin-top:10px; margin-bottom:0;">
+									<label><input type="checkbox" id="newHDBrainwalletAck" class="checkbox-inline"> I understand a weak custom seed can permanently expose every derived key.</label>
+								</div>
+							</div>
 						</div>
 
 						<input type="button" class="btn btn-primary" value="Generate" id="newHDKeysBtn">

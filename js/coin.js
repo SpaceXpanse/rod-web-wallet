@@ -81,35 +81,61 @@
 		};
 	}
 
+	coinjs.secureRandomBytes = function(length){
+		var requestedLength = length || 32;
+		var cryptoObject = window.crypto || window.msCrypto;
+
+		if(!cryptoObject || typeof cryptoObject.getRandomValues !== 'function'){
+			throw new Error('Secure randomness is unavailable in this browser');
+		}
+
+		var randomBytes = [];
+		var generatedBytes = 0;
+		while(generatedBytes < requestedLength){
+			var chunkLength = Math.min(requestedLength - generatedBytes, 65536);
+			var chunk = new Uint8Array(chunkLength);
+			cryptoObject.getRandomValues(chunk);
+			for(var chunkIndex = 0; chunkIndex < chunk.length; chunkIndex++){
+				randomBytes.push(chunk[chunkIndex]);
+			}
+			generatedBytes += chunk.length;
+		}
+
+		return randomBytes;
+	}
+
+	coinjs.secureRandomByte = function(){
+		return coinjs.secureRandomBytes(1)[0];
+	}
+
+	coinjs.secureRandomRange = function(maxExclusive){
+		if(maxExclusive <= 0 || maxExclusive > 256){
+			throw new Error('secureRandomRange requires a maxExclusive between 1 and 256');
+		}
+
+		var maxAcceptableValue = Math.floor(256 / maxExclusive) * maxExclusive;
+		var randomByte = coinjs.secureRandomByte();
+		while(randomByte >= maxAcceptableValue){
+			randomByte = coinjs.secureRandomByte();
+		}
+
+		return randomByte % maxExclusive;
+	}
+
 	/* generate a new random private key */
 	coinjs.newPrivkey = function(){
-		var x = window.location;
-		x += (window.screen.height * window.screen.width * window.screen.colorDepth);
-		x += coinjs.random(64);
-		x += (window.screen.availHeight * window.screen.availWidth * window.screen.pixelDepth);
-		x += navigator.language;
-		x += window.history.length;
-		x += coinjs.random(64);
-		x += navigator.userAgent;
-		x += 'coinb.in';
-		x += (Crypto.util.randomBytes(64)).join("");
-		x += x.length;
-		var dateObj = new Date();
-		x += dateObj.getTimezoneOffset();
-		x += coinjs.random(64);
-		x += (document.getElementById("entropybucket")) ? document.getElementById("entropybucket").innerHTML : '';
-		x += x+''+x;
-		var r = x;
-		for(i=0;i<(x).length/25;i++){
-			r = Crypto.SHA256(r.concat(x));
-		}
-		var checkrBigInt = new BigInteger(r);
-		var orderBigInt = new BigInteger("fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
+		var orderBigInt = new BigInteger("fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141", 16);
+		var candidateBytes = coinjs.secureRandomBytes(32);
+		var checkrBigInt = BigInteger.fromByteArrayUnsigned(candidateBytes);
 		while (checkrBigInt.compareTo(orderBigInt) >= 0 || checkrBigInt.equals(BigInteger.ZERO) || checkrBigInt.equals(BigInteger.ONE)) {
-			r = Crypto.SHA256(r.concat(x));
-			checkrBigInt = new BigInteger(r);
+			candidateBytes = coinjs.secureRandomBytes(32);
+			checkrBigInt = BigInteger.fromByteArrayUnsigned(candidateBytes);
 		}
-		return r;
+		var privateKeyHex = Crypto.util.bytesToHex(candidateBytes);
+		while(privateKeyHex.length < 64){
+			privateKeyHex = '0' + privateKeyHex;
+		}
+		return privateKeyHex;
 	}
 
 	/* generate a public key from a private key */
@@ -1134,7 +1160,7 @@
 			var sendaddress = coinjs.pubkey2address(Crypto.util.bytesToHex(addressPt.getEncoded(true)));
 			
 			
-			var OPRETBytes = [6].concat(Crypto.util.randomBytes(4)).concat(ephemeralPt.getEncoded(true)); // ephemkey data
+			var OPRETBytes = [6].concat(coinjs.secureRandomBytes(4)).concat(ephemeralPt.getEncoded(true)); // ephemkey data
 			var q = coinjs.script();
 			q.writeOp(106); // OP_RETURN
 			q.writeBytes(OPRETBytes);
@@ -2246,7 +2272,7 @@
 		var l = length || 25;
 		var chars = "!$%^&*()_+{}:@~?><|\./;'#][=-abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
 		for(x=0;x<l;x++) {
-			r += chars.charAt(Math.floor(Math.random() * 62));
+			r += chars.charAt(coinjs.secureRandomRange(chars.length));
 		}
 		return r;
 	}

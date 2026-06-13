@@ -126,6 +126,14 @@ return typeof value === "string" && value !== "1";
 		$(selector).html('<span class="glyphicon glyphicon-exclamation-sign"></span> '+message).removeClass("hidden").fadeOut().fadeIn();
 	}
 
+	function walletAccessWarningsAcknowledged(selector){
+		return $(selector).is(":checked");
+	}
+
+	function brainwalletWarningsAcknowledged(selector){
+		return !$(selector).is(":checked") || $(selector+"Ack").is(":checked");
+	}
+
 	$("#openBtn").click(function(){
   if(!captchaPassed()){
     return;
@@ -149,6 +157,10 @@ return typeof value === "string" && value !== "1";
 		if(email.match(/[\s\w\d]+@[\s\w\d]+/g)){
 			if(isWalletPasswordStrong){
 				if($("#openPass").val()==$("#openPassConfirm").val()){
+					if(!walletAccessWarningsAcknowledged("#openWalletRiskAcknowledgement")){
+						showWalletLoginError("#openLoginStatus", "Confirm the local-only wallet warning before opening the wallet.");
+						return;
+					}
 					var email = $("#openEmail").val().toLowerCase();
 					var pass = walletPassword;
 					var s = email;
@@ -184,6 +196,10 @@ return typeof value === "string" && value !== "1";
   if(!captchaPassed()){
     return;
   }
+		if(!walletAccessWarningsAcknowledged("#openWifRiskAcknowledgement")){
+			showWalletLoginError("#openWifStatus", "Confirm the local-only wallet warning before importing a WIF key.");
+			return;
+		}
   var wif = $.trim($("#openWifKey").val());
 		$("#openWifStatus").html("").addClass("hidden");
 
@@ -646,6 +662,10 @@ return typeof value === "string" && value !== "1";
 		if($("#newCompressed").is(":checked")){
 			coinjs.compressed = true;
 		}
+		if(!brainwalletWarningsAcknowledged("#newBrainwallet")){
+			alert('Acknowledge the brain-wallet warning before generating a custom-seed wallet.');
+			return;
+		}
 		var s = ($("#newBrainwallet").is(":checked")) ? $("#brainwallet").val() : null;
 		var coin = coinjs.newKeys(s);
 		$("#newBitcoinAddress").val(coin.address);
@@ -715,16 +735,22 @@ return typeof value === "string" && value !== "1";
 	$("#newBrainwallet").click(function(){
 		if($(this).is(":checked")){
 			$("#brainwallet").removeClass("hidden");
+			$("#brainwalletAckWrap").removeClass("hidden");
 		} else {
 			$("#brainwallet").addClass("hidden");
+			$("#brainwalletAckWrap").addClass("hidden");
+			$("#newBrainwalletAck").prop('checked', false);
 		}
 	});
 
 	$("#newSegWitBrainwallet").click(function(){
 		if($(this).is(":checked")){
 			$("#brainwalletSegWit").removeClass("hidden");
+			$("#brainwalletSegWitAckWrap").removeClass("hidden");
 		} else {
 			$("#brainwalletSegWit").addClass("hidden");
+			$("#brainwalletSegWitAckWrap").addClass("hidden");
+			$("#newSegWitBrainwalletAck").prop('checked', false);
 		}
 	});
 
@@ -741,6 +767,10 @@ return typeof value === "string" && value !== "1";
 	$("#newSegWitKeysBtn").click(function(){
 		var compressed = coinjs.compressed;
 		coinjs.compressed = true;
+		if(!brainwalletWarningsAcknowledged("#newSegWitBrainwallet")){
+			alert('Acknowledge the brain-wallet warning before generating a custom-seed wallet.');
+			return;
+		}
 
 		var s = ($("#newSegWitBrainwallet").is(":checked")) ? $("#brainwalletSegWit").val() : null;
 		var coin = coinjs.newKeys(s);
@@ -929,6 +959,10 @@ return typeof value === "string" && value !== "1";
 
 	$("#newHDKeysBtn").click(function(){
 		coinjs.compressed = true;
+		if(!brainwalletWarningsAcknowledged("#newHDBrainwallet")){
+			alert('Acknowledge the brain-wallet warning before generating a custom-seed wallet.');
+			return;
+		}
 		var s = ($("#newHDBrainwallet").is(":checked")) ? $("#HDBrainwallet").val() : null;
 		var hd = coinjs.hd();
 		var pair = hd.master(s);
@@ -940,8 +974,11 @@ return typeof value === "string" && value !== "1";
 	$("#newHDBrainwallet").click(function(){
 		if($(this).is(":checked")){
 			$("#HDBrainwallet").removeClass("hidden");
+			$("#HDBrainwalletAckWrap").removeClass("hidden");
 		} else {
 			$("#HDBrainwallet").addClass("hidden");
+			$("#HDBrainwalletAckWrap").addClass("hidden");
+			$("#newHDBrainwalletAck").prop('checked', false);
 		}
 	});
 

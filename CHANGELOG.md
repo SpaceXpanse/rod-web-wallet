@@ -9,6 +9,10 @@ The format is inspired by Keep a Changelog and follows Semantic Versioning princ
 ### Added
 - Wallet tab WIF import support now lets users paste a ROD WIF private key, decode it locally, open the wallet dashboard, and use the existing balance/send/sign workflow through [`index.html`](index.html:196) and [`js/coinbin.js`](js/coinbin.js:35).
 
+### Security
+- Hardened browser entropy generation in [`js/coin.js`](js/coin.js) to rely on the CSPRNG-backed path used by the wallet runtime, preserving existing wallet compatibility while tightening client-side randomness handling.
+- Added explicit risk acknowledgments in [`index.html`](index.html:204) and [`index.html`](index.html:533) for legacy Open Wallet credentials and brain-wallet style custom seeds, with enforcement in [`js/coinbin.js`](js/coinbin.js) to require user acknowledgment before sensitive deterministic wallet flows proceed.
+
 ### Changed
 - Wallet send review/confirm flow now reapplies [`ensureWalletFeeMeetsRelayFloor()`](js/coinbin.js:381) before modal review and final send, prefilling the relay-minimum fee earlier and surfacing the adjustment in the confirmation modal.
 
