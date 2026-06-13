@@ -1,9 +1,9 @@
----- Version 1.7 2021.10.23 ----
+---- Version 2.1.0-beta 2026.06.13 ----
 a56ff0cb2cafaa41bc5a892cc780bbbfd5d8452a  ./js/aes.js
 415e854fc3ecd4db3e92e423b247a02c21646001  ./js/bootstrap-datetimepicker.min.js
 e2ddfe5a574c29f39b511aada1bd85e0ba60fa70  ./js/bootstrap.min.js
-67c8fa395db611e271c881e4863024836b13541c  ./js/coinbin.js
-adafae94a541952f2bcb97f443b4ebd55acf25cf  ./js/coin.js
+cb763df7b5dd818352959dc4e8af75f6eb124a16  ./js/coinbin.js
+e7bb5be27d9c297f787da0b4d18be0e644c4808b  ./js/coin.js
 1fca7653cc58fef8a8fc2c6f38830baa0ed2417e  ./js/collapse.js
 9ba5ede3d7f9d4c8fd623395f196adfdcf7e970f  ./js/crypto-min.js
 e5fb96e1a89b537b9d5760aa215c366549286bbe  ./js/crypto-sha256-hmac.js
@@ -35,6 +35,6 @@ ca35b697d99cae4d1b60f2d60fcd37771987eb07  ./fonts/glyphicons-halflings-regular.w
 4dcf0ab896f5417047f881de91bad10dcbda48c6  ./fonts/glyphicons-halflings-regular.svg
 278e49a86e634da6f2a02f3b47dd9d2a8f26210f  ./fonts/glyphicons-halflings-regular.woff
 44bc1850f570972267b169ae18f1cb06b611ffa2  ./fonts/glyphicons-halflings-regular.ttf
-690725b0273ac0ad0fe83780b1ab4a885e0ce173  ./README.md
-db2d3358820710eda99fbf2849e2470b768a28f5  ./index.html
+b5f723a87456681acbfba87f2fecce4a61114447  ./README.md
+60d2a0b79f3f16c100c8b15ea387d372fc86e8e4  ./index.html
 c7b7b8561efcf96144f4975f14b47acd9df5405c  ./test.html
