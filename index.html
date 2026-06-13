@@ -201,7 +201,7 @@
 											<form class="form-signin wallet-access-card" role="form" action="javascript:;">
 												<h3><span class="glyphicon glyphicon-briefcase"></span> Open wallet</h3>
 											<p class="text-muted">Enter the same email and passphrase every time to derive the same ROD wallet in this browser. A different email or passphrase will generate a different wallet.</p>
-											<div class="alert alert-warning"><b>Compatibility notice:</b> This wallet keeps the slightly less secure legacy derivation for compatibility, so the same email and passphrase still open the same wallet as before. A stronger derivation cannot be added here without changing the resulting private key and address, which makes using a really strong, unique passphrase much more important. Weak or reused credentials put your funds at risk.</div>
+											<div class="alert alert-warning"><b>Compatibility notice:</b> This wallet keeps the slightly less secure encryption for compatibility, which makes using a really strong, unique passphrase much more important. Weak or reused credentials put your funds at risk.</div>
 
 												<div class="form-group">
 													<label for="openEmail">Email address</label>
@@ -235,7 +235,7 @@
 												</div>
 
 												<div class="checkbox">
-													<label><input type="checkbox" id="openWalletRiskAcknowledgement" class="checkbox-inline"> I understand this legacy wallet login is deterministic, local-only, unrecoverable, and only as strong as my email + passphrase.</label>
+													<label><input type="checkbox" id="openWalletRiskAcknowledgement" class="checkbox-inline"> I understand this wallet login is deterministic, local-only, unrecoverable if password or WIF is lost, and only as strong as my passphrase.</label>
 												</div>
 
 												<div id="openLoginStatus" class="alert alert-danger hidden"></div>
@@ -261,7 +261,7 @@
 												</div>
 
 												<div class="checkbox">
-													<label><input type="checkbox" id="openWifRiskAcknowledgement" class="checkbox-inline"> I understand this legacy wallet login is deterministic, local-only, unrecoverable, and only as strong as my email + passphrase.</label>
+													<label><input type="checkbox" id="openWifRiskAcknowledgement" class="checkbox-inline"> I understand this wallet login is deterministic, local-only, unrecoverable if password or WIF is lost, and only as strong as my passphrase..</label>
 												</div>
 
 												<div id="openWifStatus" class="alert alert-danger hidden"></div>
@@ -1567,7 +1567,7 @@
 
 		<div id="footer">
 			<div class="container text-right">
-	        		<p class="text-muted">Version 2.0.2-beta</p>
+	        		<p class="text-muted">Version 2.1.0-beta</p>
 			</div>
 		</div>
 

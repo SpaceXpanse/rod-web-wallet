@@ -1,4 +1,4 @@
-const STATIC_CACHE_VERSION = "rod-wallet-static-v1";
+const STATIC_CACHE_VERSION = "rod-wallet-static-v2.1.0-beta";
 const STATIC_ASSET_URLS = [
   "./",
   "./index.html",

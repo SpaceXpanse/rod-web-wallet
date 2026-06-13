@@ -6,6 +6,8 @@ The format is inspired by Keep a Changelog and follows Semantic Versioning princ
 
 ## [Unreleased]
 
+## [2.1.0-beta] - 2026-06-13
+
 ### Added
 - Wallet tab WIF import support now lets users paste a ROD WIF private key, decode it locally, open the wallet dashboard, and use the existing balance/send/sign workflow through [`index.html`](index.html:196) and [`js/coinbin.js`](js/coinbin.js:35).
 
